@@ -2,11 +2,9 @@ package conexion;
 
 import com.ibm.db2.jcc.am.Connection;
 
+import java.io.*;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ConexionBD {
     static Connection conexion = null;
@@ -19,12 +17,12 @@ public class ConexionBD {
 
     }
 
-    public void abrirConexion(String usuario, String contra){
+    public void abrirConexion(String usuario, String contra, String BD){
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             System.out.println("Driver prendido");
 
-            conexion = (Connection) DriverManager.getConnection("jdbc:db2:sample", usuario, contra);
+            conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, usuario, contra);
 
             if(conexion != null && !conexion.isClosed()){
                 System.out.println("Conexion exitosa");
@@ -83,5 +81,25 @@ public class ConexionBD {
     }
     public void ejecutarDML() throws SQLException {
         st.executeUpdate();
+    }
+    private void ejecutar(String sql) throws SQLException {//no debe usarse en consultas de a deberas
+        conexion.createStatement().executeUpdate(sql);
+    }
+    public void ejecutarScriptInicial() throws IOException, SQLException {
+        String path = new File("").getAbsolutePath();
+        BufferedReader r = new BufferedReader(new FileReader(path.concat("/src/sql/bd.sql")));
+        String line = "";
+        StringBuilder scripo = new StringBuilder();
+
+        while((line = r.readLine())!=null){//saca linea por linea
+            scripo.append(line);
+            if (line.contains(";")){//fin de instruccion, ejecuta
+                scripo.deleteCharAt(scripo.length()-1);
+                System.out.println(scripo);
+                ejecutar(scripo.toString());
+                scripo.setLength(0);
+            }
+        }
+
     }
 }

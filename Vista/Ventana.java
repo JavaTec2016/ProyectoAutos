@@ -10,6 +10,7 @@ import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
 
@@ -89,8 +90,9 @@ public class Ventana extends JFrame {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ConexionBD.getConector().abrirConexion("SANTIAGO", "santiago");
+                        ConexionBD.getConector().abrirConexion("SANTIAGO", "santiago", "Autos");
                         try {
+                            ConexionBD.getConector().ejecutarScriptInicial();
                             DAO.d.agregar(
                                     new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si")
                             );
@@ -99,6 +101,9 @@ public class Ventana extends JFrame {
                             e.printStackTrace();
                         } catch (SQLException e) {
                             System.out.println("Error en la consulta: " + e.getErrorCode());
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            System.out.println("Error al abrir el script: ");
                             e.printStackTrace();
                         }
                         try {

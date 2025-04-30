@@ -1,7 +1,5 @@
-CREATE DATABASE IF NOT EXISTS Autos;
-USE Autos;
 
-CREATE TABLE IF NOT EXISTS Cliente(
+CREATE TABLE Cliente(
     id INT NOT NULL PRIMARY KEY,
     nombre VARCHAR(32) NOT NULL,
     apellido VARCHAR(32) NOT NULL,
@@ -9,5 +7,5 @@ CREATE TABLE IF NOT EXISTS Cliente(
     ciudad VARCHAR(50) NOT NULL,
     calle VARCHAR(50) NOT NULL,
     num_domicilio VARCHAR(10) NOT NULL,
-    email VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL
 );
