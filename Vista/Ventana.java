@@ -89,7 +89,7 @@ public class Ventana extends JFrame {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ConexionBD.getConector().abrirConexion("THEGR", "chinga tu madre");
+                        ConexionBD.getConector().abrirConexion("SANTIAGO", "santiago");
                         try {
                             DAO.d.agregar(
                                     new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si")
