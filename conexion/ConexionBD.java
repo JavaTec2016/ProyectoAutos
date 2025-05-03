@@ -82,10 +82,13 @@ public class ConexionBD {
     public void ejecutarDML() throws SQLException {
         st.executeUpdate();
     }
+    public ResultSet ejecutarSQL() throws SQLException {
+        return st.executeQuery();
+    }
     private void ejecutar(String sql) throws SQLException {//no debe usarse en consultas de a deberas
         conexion.createStatement().executeUpdate(sql);
     }
-    public void ejecutarScriptInicial() throws IOException, SQLException {
+    public void ejecutarScriptInicial() throws IOException {
         String path = new File("").getAbsolutePath();
         BufferedReader r = new BufferedReader(new FileReader(path.concat("/src/sql/bd.sql")));
         String line = "";
@@ -96,7 +99,11 @@ public class ConexionBD {
             if (line.contains(";")){//fin de instruccion, ejecuta
                 scripo.deleteCharAt(scripo.length()-1);
                 System.out.println(scripo);
-                ejecutar(scripo.toString());
+                try {
+                    ejecutar(scripo.toString());
+                } catch (SQLException e) {
+                    System.out.println("La instruccion no se pudo completar ("+e.getErrorCode()+"): " + scripo.toString());
+                }
                 scripo.setLength(0);
             }
         }

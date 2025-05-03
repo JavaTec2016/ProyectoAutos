@@ -1,5 +1,6 @@
 package FormTools;
 
+import Modelo.Usuario;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
@@ -9,41 +10,42 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 public class FormHook {
-    private HashMap<String, CampoHook> botones;
-    private HashMap<String, CampoHook> campos;
+    private LinkedHashMap<String, CampoHook> botones;
+    private LinkedHashMap<String, CampoHook> campos;
 
-    private HashMap<String, String> labels;
-    private HashMap<String, String> tipoDatos;
-    private HashMap<String, String> tipoComponentes;
-    private HashMap<String, Integer> longitudes;
-    private HashMap<String, Boolean> nonulos;
-    private HashMap<String, String[]> especiales;
-    private HashMap<String, String> exps;
+    private LinkedHashMap<String, String> labels;
+    private LinkedHashMap<String, String> tipoDatos;
+    private LinkedHashMap<String, String> tipoComponentes;
+    private LinkedHashMap<String, Integer> longitudes;
+    private LinkedHashMap<String, Boolean> nonulos;
+    private LinkedHashMap<String, String[]> especiales;
+    private LinkedHashMap<String, String> exps;
 
     private int width = 0;
     private int height = 0;
 
-    private HashMap<String, PanelHook> secciones;
+    private LinkedHashMap<String, PanelHook> secciones;
 
     public FormHook(String[] camposNombres, String[] aLabels, String[] aTipoDatos, String[] aTipoComponentes, Integer[] aLongitudes, Boolean[] aNonulos, String[][] aEspeciales, String[] aExps){
-        secciones = new HashMap<String, PanelHook>();
-        botones = new HashMap<String, CampoHook>();
-        campos = new HashMap<String, CampoHook>();
-        labels = new HashMap<String, String>();
-        tipoDatos = new HashMap<>();
-        tipoComponentes = new HashMap<>();
-        longitudes = new HashMap<>();
-        nonulos = new HashMap<>();
-        especiales = new HashMap<>();
-        exps = new HashMap<>();
+        secciones = new LinkedHashMap<String, PanelHook>();
+        botones = new LinkedHashMap<String, CampoHook>();
+        campos = new LinkedHashMap<String, CampoHook>();
+        labels = new LinkedHashMap<String, String>();
+        tipoDatos = new LinkedHashMap<>();
+        tipoComponentes = new LinkedHashMap<>();
+        longitudes = new LinkedHashMap<>();
+        nonulos = new LinkedHashMap<>();
+        especiales = new LinkedHashMap<>();
+        exps = new LinkedHashMap<>();
 
         for (int i = 0; i < camposNombres.length; i++) {
             String nombre = camposNombres[i];
-            CampoHook componente = new CampoHook();//new CampoHook(obtenerComponente(aTipoComponentes[i], aExps[i]));
+            CampoHook componente = FormHook.makeVerticalListPanel(1);
             campos.put(camposNombres[i], componente);
             labels.put(nombre, aLabels[i]);
             tipoDatos.put(nombre, aTipoDatos[i]);
@@ -62,15 +64,56 @@ public class FormHook {
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
+                System.out.println(s + " generandin " + campoHook.componente);
                 //asignar un panel con flow o box layout al campo, luego ponele label e input
-                JPanel panel = new JPanel();
-                CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
-                CampoHook label = new CampoHook(new JLabel(labels.get(s)));
+                try{
+                    CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
+                    CampoHook label = new CampoHook(new JLabel(labels.get(s)));
 
-                campoHook.appendChild("input_"+s, input);
-                campoHook.appendChild("label_"+s, label);
+                    campoHook.appendChild("label_"+s, label);
+                    campoHook.appendChild("input_"+s, input);
+
+                }catch (NullPointerException e){
+                    System.out.println("El campo no se pudo agregar: " + tipoComponentes.get(s));
+                }
+
             }
         });
+    }
+    public void attachCamposEn(CampoHook comp){
+
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                //System.out.println(s + " Attachin " + campoHook);
+                comp.appendChild(s, campoHook);
+            }
+        });
+    }
+    public void attachBotonesEn(CampoHook comp){
+        botones.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                comp.appendChild(s, campoHook);
+            }
+        });
+    }
+    public void attachSeccionesEn(CampoHook comp){
+        secciones.forEach(new BiConsumer<String, PanelHook>() {
+            @Override
+            public void accept(String s, PanelHook panelHook) {
+                comp.appendChild(s, panelHook);
+            }
+        });
+    }
+    public void attachEnSeccion(String nombre){
+        attachCamposEn(secciones.get(nombre));
+    }
+    public void attachBotonesEnSeccion(String nombre){
+        attachBotonesEn(secciones.get(nombre));
+    }
+    public void attachSeccionesA(PanelHook p){
+        attachSeccionesEn(p);
     }
     /**
      * le das un tipo de componente valido y avienta el jcomponent equivalente
@@ -99,16 +142,19 @@ public class FormHook {
         txt.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-                super.keyTyped(e);
+                Pattern patron = Pattern.compile(regex);
+                String testear = ""+ txt.getText()+e.getKeyChar();
+                if(patron.matcher(testear).matches()){
+                    super.keyTyped(e);
+                }else {
+                    //System.out.println("incorrec: "+ testear + "  " + regex);
+                    e.consume();
+                }
             }
 
             @Override
             public void keyPressed(KeyEvent e) { //el caracter esta permitido en el field
-                Pattern patron = Pattern.compile(regex);
-                String testear = ""+e.getKeyChar();
-                if(patron.matcher(testear).matches()){
-                    super.keyPressed(e);
-                }
+                super.keyPressed(e);
             }
 
             @Override
@@ -119,23 +165,25 @@ public class FormHook {
         return txt;
     }
     static PanelHook makeFlowPanel(){
-        return new PanelHook(new FlowLayout());
+        FlowLayout fl = new FlowLayout();
+        fl.setAlignment(FlowLayout.CENTER);
+        return new PanelHook(fl);
     }
-    static PanelHook makeVerticalListPanel(){
+    public static PanelHook makeVerticalListPanel(){
         return new PanelHook(new GridLayout(3, 1));
     }
-    static PanelHook makeVerticalListPanel(int rows){
+    public static PanelHook makeVerticalListPanel(int rows){
         PanelHook p = new PanelHook();
         p.setLayout(new BoxLayout(p.getComponente(), BoxLayout.PAGE_AXIS));
         return p;
     }
-    static PanelHook makeHorizontalListPanel(){
+    public static PanelHook makeHorizontalListPanel(){
         return new PanelHook(new GridLayout(1, 0));
     }
-    static PanelHook makeHorizontalListPanel(int columns){
+    public static PanelHook makeHorizontalListPanel(int columns){
         return new PanelHook(new GridLayout(1, columns));
     }
-    static PanelHook makeGridBagPanel(){
+    public static PanelHook makeGridBagPanel(){
         PanelHook p = new PanelHook(new GridBagLayout());
         p.getComponente().addMouseListener(new MouseAdapter() {
             @Override
@@ -158,6 +206,7 @@ public class FormHook {
         return p;
     }
     public void agregarSeccion(String Id, PanelHook p){
+        System.out.println("Nueva seccion: " + Id + p.getComponente());
         secciones.put(Id, p);
     }
     public static PanelHook crearRegistro(String[] info){
@@ -225,4 +274,26 @@ public class FormHook {
         return s;
     }
 
+    public static FormHook crearLogin(){
+        FormHook f = new FormHook(
+                Usuario.obtenerCamposNombres(),
+                Usuario.obtenerLabels(),
+                Usuario.obtenerCampoTiposSQL(),
+                Usuario.obtenerCamposComponentes(),
+                Usuario.obtenerLongitudes(),
+                Usuario.obtenerNoNulos(),
+                Usuario.obtenerEspeciales(),
+                Usuario.obtenerExpresiones()
+        );
+        PanelHook vertical = FormHook.makeVerticalListPanel(0);
+        PanelHook horizontal = FormHook.makeHorizontalListPanel(2);
+
+        f.agregarSeccion("campos", vertical);
+        f.agregarSeccion("botones", horizontal);
+
+        f.generar();
+        f.attachEnSeccion("campos");
+        f.attachBotonesEnSeccion("botones");
+        return f;
+    }
 }

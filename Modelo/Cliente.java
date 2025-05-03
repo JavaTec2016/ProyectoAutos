@@ -20,28 +20,31 @@ public class Cliente extends ModeloBD {
         this.num_domicilio = num_domicilio;
         this.email = email;
     }
-    static String[] obtenerCampoNombres(){
+    public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Cliente.class);
     }
-    static String[] obtenerLabels(){
+    public static String[] obtenerLabels(){
         return new String[]{"ID", "Nombre", "Apellido", "Teléfono", "Ciudad", "Calle", "Número de domicilio", "Email"};
     }
-    static Class<?>[] obtenerCampoTipos(){
+    public static Class<?>[] obtenerCampoTipos(){
         return obtenerCampoTiposDe(Cliente.class);
     }
-    static String[] obtenerCampoTiposSQL(){
+    public static String[] obtenerCampoTiposSQL(){
         return new String[]{"INT", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR"};
     }
-    static int[] obtenerLongitudes(){
-        return new int[]{-1, 32, 32, 10, 50, 50, 10, 50};
+    public static Integer[] obtenerLongitudes(){
+        return new Integer[]{-1, 32, 32, 10, 50, 50, 10, 50};
     }
-    static boolean[] obtenerNoNulos(){
-        return new boolean[]{true, true, false, true, true, true, false, false};
+    public static Boolean[] obtenerNoNulos(){
+        return new Boolean[]{true, true, false, true, true, true, false, false};
     }
-    static String[] obtenerCamposComponentes(){
+    public static String[] obtenerCamposComponentes(){
         return new String[]{"textfield", "textfield", "textfield", "textfield", "textfield", "textfield", "textfield", "textfield"};
     }
-    static String[] obtenerExpresiones(){
+    public static Integer[] obtenerPrimarias(){
+        return new Integer[]{0};
+    }
+    public static String[] obtenerExpresiones(){
         return new String[]{
                 "[0-9]*",
                 "([A-Za-z]|\\s)*",
@@ -52,5 +55,19 @@ public class Cliente extends ModeloBD {
                 "([A-Za-z0-9]|\\s)*",
                 "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$" //estandares truco
         };
+    }
+
+    @Override
+    public String toString() {
+        return "Cliente{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", apellido='" + apellido + '\'' +
+                ", telefono='" + telefono + '\'' +
+                ", ciudad='" + ciudad + '\'' +
+                ", calle='" + calle + '\'' +
+                ", num_domicilio='" + num_domicilio + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

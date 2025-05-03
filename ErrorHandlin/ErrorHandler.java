@@ -9,6 +9,8 @@ public class ErrorHandler {
     static int SQL_ILLEGAL_SYMBOL = -104;
     static int SQL_MISSING_PERMISSION = -552;
     static int SQL_DUPLICATE_ENTRY = -601;
+    static int SQL_CONSTRAINT_FAIL = -801;
+    static int RESULT_SET_OUT_OF_BOUNDS = -4476;
 
     static HashMap<Integer, Call> handlers = new HashMap<>();
 
