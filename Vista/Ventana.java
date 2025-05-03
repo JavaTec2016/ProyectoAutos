@@ -6,6 +6,7 @@ import FormTools.ScrollHook;
 import FormTools.PanelHook;
 import Modelo.Cliente;
 import Modelo.ModeloBD;
+import Modelo.Usuario;
 import conexion.ConexionBD;
 import controlador.DAO;
 
@@ -117,13 +118,11 @@ public class Ventana extends JFrame {
 
     public void cambiarALogin(){
         if(ventanaLogin == null){
-            FormHook f = FormHook.crearLogin();
-            ventanaLogin = FormHook.makeHorizontalListPanel(2);
-            f.attachSeccionesEn(ventanaLogin);
+            ventanaLogin = FormHook.crearLogin(getSize());
             add(ventanaLogin.componente, "login");
         }
         layout.show(getContentPane(), "login");
-
+        revalidate();
     }
     public static void main(String[] args) {
         ModeloBD.registrarModelo(Cliente.class);

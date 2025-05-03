@@ -31,8 +31,9 @@ public class ScrollHook extends CampoHook {
         return componente;
     }
     @Override
-    public void setBounds(int x, int y, int w, int h){
+    public CampoHook setBounds(int x, int y, int w, int h){
         componente.setBounds(x,y,w,h);
+        return this;
     }
 
     public CampoHook getView() {
