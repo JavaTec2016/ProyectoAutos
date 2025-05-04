@@ -5,6 +5,7 @@ import com.ibm.db2.jcc.am.Connection;
 import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.Properties;
 
 public class ConexionBD {
     static Connection conexion = null;
@@ -17,12 +18,19 @@ public class ConexionBD {
 
     }
 
-    public void abrirConexion(String usuario, String contra, String BD){
+    public void abrirConexion(String usuario, String contra, String BD) throws SQLException {
+        if(conexion != null && !conexion.isClosed()){
+            System.out.println("ya hay una conexion");
+            return;
+        }
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             System.out.println("Driver prendido");
-
-            conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, usuario, contra);
+            Properties p = new Properties();
+            p.put("user", usuario);
+            p.put("password", contra);
+            p.put("securityMechanism", "9");
+            conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, p);
 
             if(conexion != null && !conexion.isClosed()){
                 System.out.println("Conexion exitosa");
@@ -38,8 +46,7 @@ public class ConexionBD {
             return;
         } catch (SQLException e){
             System.out.println("Error al conectar:");
-            e.printStackTrace();
-            return;
+            throw e;
         }
     }
     public void cerrarConexion() throws SQLException {

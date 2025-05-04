@@ -1,6 +1,9 @@
 package FormTools;
 
+import Modelo.ModeloBD;
 import Modelo.Usuario;
+import conexion.ConexionBD;
+import controlador.DAO;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
@@ -9,6 +12,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -75,6 +79,9 @@ public class FormHook {
             }
         });
     }
+    public CampoHook getBoton(String nom){
+        return botones.get(nom);
+    }
     /**
      * Crea los elementos del formulario, labels e inputs
      */
@@ -98,6 +105,35 @@ public class FormHook {
 
             }
         });
+    }
+    public ArrayList<Object> extraer(){
+        ArrayList<Object> datos = new ArrayList<>();
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                 JComponent c = campoHook.getChild("input").componente;
+                 datos.add(extraerDato(c));
+            }
+        });
+        return datos;
+    }
+    public Object extraerDato(JComponent campo){
+
+        Class<? extends JComponent> clase = campo.getClass();
+        switch (clase.getSimpleName().toLowerCase()){
+            case "jtextfield":
+                String t = ((JTextField)campo).getText();
+                if(t.isEmpty()) return null;
+                else return t;
+
+            case "jcombobox":
+                return ((JComboBox)campo).getSelectedItem();
+
+            case "checkbox":
+                return ((JCheckBox)campo).isSelected();
+
+            default: return null;
+        }
     }
     public void setCamposOpaque(boolean b){
         campos.forEach(new BiConsumer<String, CampoHook>() {
@@ -234,7 +270,7 @@ public class FormHook {
         return new PanelHook(fl);
     }
     public static PanelHook makeVerticalListPanel(){
-        return new PanelHook(new GridLayout(3, 1));
+        return new PanelHook(new GridLayout(0, 1));
     }
     public static PanelHook makeVerticalListPanel(int rows){
         PanelHook p = new PanelHook();
@@ -243,13 +279,13 @@ public class FormHook {
             @Override
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
-                p.getComponente().setBackground(Color.lightGray);
+                //p.getComponente().setBackground(Color.lightGray);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e);
-                p.getComponente().setBackground(Color.white);
+                //p.getComponente().setBackground(Color.white);
             }
         });
         return p;
@@ -284,7 +320,7 @@ public class FormHook {
         return p;
     }
     public void agregarSeccion(String Id, PanelHook p){
-        System.out.println("Nueva seccion: " + Id + p.getComponente());
+        //System.out.println("Nueva seccion: " + Id + p.getComponente());
         secciones.put(Id, p);
     }
     public static PanelHook crearRegistro(String[] info){
@@ -296,20 +332,41 @@ public class FormHook {
     }
     public static PanelHook crearRegistroGridBag(String Id, CampoHook[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio){
         PanelHook p = makeGridBagPanel();
+        p.setPreferredSize(new Dimension(0, tamanio));
+        p.setMaximumSize(new Dimension(32767, tamanio));
         int celdasTotal = celdas+2;//incluir botones
 
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         double freeWeight = 1;
         for (int i = 0; i < datos.length; i++) {
-            datos[i].getComponente().setPreferredSize(new Dimension(0, tamanio));
+            //datos[i].getComponente().setPreferredSize(new Dimension(0, tamanio));
             int ocupa = distribucion[i];
             //convertir las celdas que ocupa el elemento a peso del gridbag
             double weight = (double) ocupa /celdasTotal;
             freeWeight -= weight;
             c.weightx = weight;
             p.addElementConstraint(Id+"_"+nombreDatos[i], datos[i], c);
+
         }
+        p.componente.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                p.setBackground(Color.lightGray);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                p.setBackground(Color.white);
+            }
+        });
         //queda solo el weight restante pa los 2 botones
         c.weightx = freeWeight/2;
         c.fill = GridBagConstraints.NONE;
@@ -483,15 +540,106 @@ public class FormHook {
                 .setPreferredSize(new Dimension(300, 50));
         horizontal.setPreferredSize(new Dimension(620, 100));
         horizontal.appendChild("btnLogear", btnLogear);
-
+        f.botones.put("btnLogear", btnLogear);
         PanelHook wrap = new PanelHook();
 
         //panelLogin.componente.setMaximumSize(new Dimension((int) (d.width*0.75), (int) (d.height*0.75)));
         wrap.appendChild("log", panelLogin);
 
+        panelLogin.form = f;
         return panelLogin;
     }
+    public static PanelHook crearABCC(Class <? extends ModeloBD> m){
 
+        PanelHook holder = FormHook.makeGridBagPanel().setBackground(Color.white);
+        PanelHook topbar = FormHook.makeGridBagPanel().setBackground(new Color(0, 102, 204));
+        PanelHook tableHolder = FormHook.makeGridBagPanel();
+        PanelHook main = FormHook.makeGridBagPanel();
+        ScrollHook tabla = FormHook.crearScroll(0);
+
+        PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102))
+                .setPreferredSize(new Dimension(200, 0));
+        sidebar.componente.setMinimumSize(new Dimension(200, 10));
+
+        //gc del panel lateral
+        GridBagConstraints gc = FormHook.makeConstraint(-1, -1, 0, 1, GridBagConstraints.VERTICAL);
+        holder.appendChild("sidebar", sidebar, gc);
+
+        ////INFO DE USUARIO EN PANEL LATERAL
+
+        ///BOTONES EN PANEL LATERAL
+
+        //gc de la info main
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = .75;
+        gc.weighty = 1;
+        holder.appendChild("main", main, gc);
+        //gc de la barra main
+        gc.gridx = 0;
+        gc.weighty = .25;
+        main.appendChild("topbar", topbar, gc);
+        //gc del panel de la tabla
+        gc.weighty = 1-gc.weighty;
+        main.appendChild("tableHolder", tableHolder, gc);
+        //gc de la tabla
+
+        gc = FormHook.makeConstraint(-1, -1, 1.0f, 1.0f, GridBagConstraints.BOTH);
+        tableHolder.appendChild("tabla", tabla, gc);
+
+        ///LECTURA DE REGISTROS Y LLENADO DE TABLA
+        tabla.getView().appendChild("reg1", FormHook.crearRegistroGridBag("reg1",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                164
+        ));
+        tabla.getView().appendChild("reg2", FormHook.crearRegistroGridBag("reg2",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                64
+        ));
+        tabla.getView().appendChild("reg3", FormHook.crearRegistroGridBag("reg3",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                164
+        ));
+        tabla.getView().appendChild("reg4", FormHook.crearRegistroGridBag("reg4",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                64
+        ));
+        tabla.getView().appendChild("reg5", FormHook.crearRegistroGridBag("reg5",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                164
+        ));
+        tabla.getView().appendChild("reg6", FormHook.crearRegistroGridBag("reg6",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                64
+        ));
+        tabla.getView().appendChild("reg7", FormHook.crearRegistroGridBag("reg7",
+                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
+                new String[]{"ID", "cantidad"},
+                new int[]{10, 10},
+                20,
+                164
+        ));
+        ///CONFIGURACION DE BOTONES
+
+        return holder;
+    }
     /**
      * elimina los campos cuyos nombres no coincidan con los nombres dados
      * @param nom lista de nombres que permanecen

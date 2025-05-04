@@ -44,7 +44,7 @@ public class Usuario extends ModeloBD {
     public static String[] obtenerExpresiones(){
         return new String[]{
                 "^\\w{0,50}",
-                "\\.{0,50}",
+                "^.{0,50}",
                 "",
                 "",
                 ""

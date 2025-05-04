@@ -25,6 +25,12 @@ public class PanelHook extends CampoHook {
     public PanelHook setPreferredSize(Dimension d){
         return (PanelHook)super.setPreferredSize(d);
     }
+
+    @Override
+    public PanelHook setMaximumSize(Dimension d) {
+        return (PanelHook) super.setMaximumSize(d);
+    }
+
     public PanelHook setSize(Dimension d){
         return (PanelHook) super.setSize(d);
     }

@@ -11,6 +11,9 @@ public class CampoHook {
     public CampoHook parent;
     public HashMap<String, CampoHook> children = new HashMap<String, CampoHook>();
     public String id;
+
+    public FormHook form;
+
     public CampoHook(){};
     public CampoHook(JComponent compo){
         componente = compo;
@@ -82,6 +85,10 @@ public class CampoHook {
     }
     public CampoHook setPreferredSize(Dimension d){
         componente.setPreferredSize(d);
+        return this;
+    }
+    public CampoHook setMaximumSize(Dimension d){
+        componente.setMaximumSize(d);
         return this;
     }
     public CampoHook setSize(Dimension d){

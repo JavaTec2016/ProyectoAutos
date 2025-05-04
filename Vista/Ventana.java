@@ -12,6 +12,8 @@ import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ public class Ventana extends JFrame {
         ventanaPrincipal.getComponente().setBackground(new Color(200,200,200));
 
 
-        ScrollHook s = FormHook.crearScroll(400, 100, 1100, 590, 0);
+        ScrollHook s = FormHook.crearScroll(400, 100, 900, 590, 0);
         s.getView().appendChild("Registro1", FormHook.crearRegistroGridBag("Registro1",
                 new JComponent[]{new JLabel("Buenas")},
                 new String[]{"ID"},
@@ -87,6 +89,18 @@ public class Ventana extends JFrame {
         add(ventanaPrincipal.componente, "principal");
 
     }
+    public static int conectar(String usuario, String pass, String bd){
+        try {
+            ConexionBD.getConector().abrirConexion(usuario, pass, bd);
+        } catch (SQLException e) {
+            System.out.println("ERROR AL CONECTAR: "+e.getErrorCode());
+            return e.getErrorCode();
+        } catch (NullPointerException e){
+            System.out.println("NULOS: " + usuario + " , " + pass + " >> " + bd);
+            return 1;
+        }
+        return 0;
+    }
     public static ArrayList<ModeloBD> realizarConsulta(String t, String[] sn, String[] fn, Object[] fv) {
 
         try {
@@ -120,11 +134,27 @@ public class Ventana extends JFrame {
         if(ventanaLogin == null){
             ventanaLogin = FormHook.crearLogin(getSize());
             add(ventanaLogin.componente, "login");
+            ventanaPrincipal = FormHook.crearABCC(Cliente.class);
+            add(ventanaPrincipal.componente, "principal");
+
+            ventanaLogin.form.getBoton("btnLogear").componente.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    ArrayList<Object> l = ventanaLogin.form.extraer();
+                    int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
+                            conectar("SANTIAGO", "santiago", "Autos");
+                    if(cod!=0) return;
+                    layout.show(getContentPane(),"principal");
+                    System.out.println(getContentPane().getSize());
+                    System.out.println(ventanaPrincipal.componente.getSize());
+                    //realizarConsulta("Cliente", null, null, null);
+                }
+            });
         }
         layout.show(getContentPane(), "login");
         revalidate();
     }
-    public static void main(String[] args) {
+    public static void main0(String[] args) {
         ModeloBD.registrarModelo(Cliente.class);
         String reg = "([A-Za-z]|\\s)*";
         Pattern p = Pattern.compile(reg);
@@ -138,7 +168,11 @@ public class Ventana extends JFrame {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ConexionBD.getConector().abrirConexion("SANTIAGO", "santiago", "Autos");
+                        try {
+                            ConexionBD.getConector().abrirConexion("SANTIAGO", "santiago", "Autos");
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
                         try {
 
                             ConexionBD.getConector().ejecutarScriptInicial();
@@ -162,6 +196,19 @@ public class Ventana extends JFrame {
                     }
                 }).start();
 
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        ModeloBD.registrarModelo(Cliente.class);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Ventana v = new Ventana();
+                v.setVisible(true);
+                v.cambiarALogin();
             }
         });
     }

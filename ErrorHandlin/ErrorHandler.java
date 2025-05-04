@@ -12,6 +12,8 @@ public class ErrorHandler {
     static int SQL_CONSTRAINT_FAIL = -801;
     static int RESULT_SET_OUT_OF_BOUNDS = -4476;
 
+    static int AUTH_FAILED = -30082;
+
     static HashMap<Integer, Call> handlers = new HashMap<>();
 
     static void registrarHandler(Integer codigo, Call fn){
