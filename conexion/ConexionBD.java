@@ -10,7 +10,7 @@ import java.util.Properties;
 public class ConexionBD {
     static Connection conexion = null;
     static ConexionBD conector = null;
-    static PreparedStatement st = null;
+    public PreparedStatement st = null;
 
     //usuario y esas cosas
 

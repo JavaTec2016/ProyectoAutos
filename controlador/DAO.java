@@ -120,6 +120,35 @@ public class DAO {
             throw new RuntimeException(e);
         }
     }
+    public void eliminar(ModeloBD reg) throws SQLException {
+        String nom = reg.getClass().getSimpleName();
+        try {
+            Integer[] primariasIdx = ModeloBD.obtenerPrimariasDe(nom);
+            String[] nombres = ModeloBD.obtenerCampoNombresDe(reg.getClass());
+            Object[] valores = reg.obtenerDatos();
+            Object[] filtrados = new Object[primariasIdx.length];
+            String sql = "DELETE FROM " + nom;
+            String where = " WHERE ";
+            for (Integer idx : primariasIdx) {
+                where+=nombres[idx]+"=?, ";
+            }
+            int i = 0;
+            for (Object filtrado : filtrados) {
+                filtrados[i] = valores[primariasIdx[i]];
+            }
+            where = where.substring(0, where.length()-2);
+            conexion.prepararStatement(sql+where, filtrados);
+            conexion.ejecutarDML();
+
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     public ResultSet getRs(){
         return rs;
     }

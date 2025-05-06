@@ -34,6 +34,8 @@ public class Ventana extends JFrame {
     ArrayList<String> selecNombres = null;
     ArrayList<String> filtroNombres = null;
     ArrayList<Object> filtroValores = null;
+    ModeloBD registroActual = null;
+
     public Ventana(){
         setSize(500, 500);
 
@@ -210,12 +212,19 @@ public class Ventana extends JFrame {
             handlearError(e.getErrorCode(), modelo.getClass().getSimpleName());
         }
     }
-    public static void modificar(ModeloBD modelo, Object[] primariasOG){
+    public void modificar(ModeloBD modelo, Object[] primariasOG){
         try {
             DAO.d.modificar(modelo, primariasOG);
         } catch (SQLException e) {
             System.out.println("Error de modificacion: " +e.getErrorCode());
             e.printStackTrace();
+        }
+    }
+    public void eliminar(ModeloBD r){
+        try {
+            DAO.d.eliminar(r);
+        } catch (SQLException e) {
+            handlearError(e.getErrorCode(), r.getClass().getSimpleName());
         }
     }
     public PanelHook actualizarVentana(String id, PanelHook p){
@@ -331,11 +340,14 @@ public class Ventana extends JFrame {
             ((JButton)reg.getChild("btnEliminar").componente).addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    registroActual = (ModeloBD) reg.asociados.get("modelo");
+
                     int eleccion = JOptionPane.showOptionDialog(v,  "Confirme la elminacion del registro", "Confirmar eliminacion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
                             new Object[]{"Continuar", "Cancelar"}, "Continuar");
 
                     if(eleccion == 0){
-                        System.out.println("ELIMINAR WIP");
+                        System.out.println("ELIMINAR WIP: " + reg.asociados.toString());
+                        eliminar(registroActual);
                         actualizarTablaABCC(tabla, tablaActual, selecNombres, filtroNombres, filtroValores);
                     }else return;
                 }
@@ -386,8 +398,7 @@ public class Ventana extends JFrame {
 
                             ConexionBD.getConector().ejecutarScriptInicial();
                             //agregar(new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si"));
-                            modificar(new Cliente(2, "Ernest", "Jui", "4941002031", "Jerekistan", "Chida", "88Bis", "Ernest@mail.si"),
-                                    new Object[]{0});
+                            //modificar(new Cliente(2, "Ernest", "Jui", "4941002031", "Jerekistan", "Chida", "88Bis", "Ernest@mail.si"), new Object[]{0});
                             System.out.println(realizarConsulta("Cliente", null, null, null));
 
                             v.cambiarALogin();

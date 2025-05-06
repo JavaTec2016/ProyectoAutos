@@ -644,6 +644,15 @@ public class FormHook {
         }
         return crearRegistroGridBag(Id, cs, nombreDatos, distribucion, celdas, tamanio);
     }
+    public static PanelHook crearRegistroGridBag(JComponent[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio, ModeloBD asociado){
+        CampoHook[] cs = new CampoHook[datos.length];
+        for (int i = 0; i < datos.length; i++) {
+            cs[i] = new CampoHook(datos[i]);
+        }
+        PanelHook reg = crearRegistroGridBag("registro", cs, nombreDatos, distribucion, celdas, tamanio);
+        reg.asociados.put("modelo", asociado);
+        return reg;
+    }
     public static ScrollHook crearScroll() {
         PanelHook p = makeVerticalListPanel();
         return new ScrollHook(p);
@@ -1035,7 +1044,7 @@ public class FormHook {
                         tamaniosAuto[i] = 1;
                     }
 
-                    PanelHook reg = FormHook.crearRegistroGridBag(""+(i[0]), display, ids, tamaniosAuto, tamanioTotal, 100);
+                    PanelHook reg = FormHook.crearRegistroGridBag(display, ids, tamaniosAuto, tamanioTotal, 100, modeloBD);
                     tabla.getView().appendChild(""+i[0], reg);
                     i[0]++;
                 }

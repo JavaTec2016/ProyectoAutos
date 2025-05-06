@@ -14,7 +14,7 @@ public class CampoHook {
     public CampoHook parent;
     public HashMap<String, CampoHook> children = new HashMap<String, CampoHook>();
     public String id;
-
+    public HashMap<String, Object> asociados = new HashMap<>();
     public FormHook form;
 
     public CampoHook(){};
