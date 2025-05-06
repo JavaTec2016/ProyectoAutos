@@ -2,7 +2,6 @@ package FormTools;
 
 import Modelo.ModeloBD;
 import Modelo.Usuario;
-import conexion.ConexionBD;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
@@ -13,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -24,12 +24,15 @@ public class FormHook {
     private LinkedHashMap<String, CampoHook> campos;
 
     private LinkedHashMap<String, String> labels;
-    private LinkedHashMap<String, String> tipoDatos;
+    private LinkedHashMap<String, String> tipoDatosSQL;
+    private LinkedHashMap<String, Class<?>> tipoDatos;
     private LinkedHashMap<String, String> tipoComponentes;
     private LinkedHashMap<String, Integer> longitudes;
+    private LinkedHashMap<String, Integer> umbrales;
     private LinkedHashMap<String, Boolean> nonulos;
     private LinkedHashMap<String, String[]> especiales;
     private LinkedHashMap<String, String> exps;
+    private LinkedHashMap<String, String> vals;
 
     private int width = 0;
     private int height = 0;
@@ -41,7 +44,7 @@ public class FormHook {
         botones = new LinkedHashMap<String, CampoHook>();
         campos = new LinkedHashMap<String, CampoHook>();
         labels = new LinkedHashMap<String, String>();
-        tipoDatos = new LinkedHashMap<>();
+        tipoDatosSQL = new LinkedHashMap<>();
         tipoComponentes = new LinkedHashMap<>();
         longitudes = new LinkedHashMap<>();
         nonulos = new LinkedHashMap<>();
@@ -53,7 +56,7 @@ public class FormHook {
             CampoHook componente = FormHook.makeGridBagPanel();
             campos.put(camposNombres[i], componente);
             labels.put(nombre, aLabels[i]);
-            tipoDatos.put(nombre, aTipoDatos[i]);
+            tipoDatosSQL.put(nombre, aTipoDatos[i]);
             tipoComponentes.put(nombre, aTipoComponentes[i]);
             longitudes.put(nombre, aLongitudes[i]);
             nonulos.put(nombre, aNonulos[i]);
@@ -61,6 +64,58 @@ public class FormHook {
             exps.put(nombre, aExps[i]);
         }
     }
+    public FormHook(String[] camposNombres, String[] aLabels, String[] aTipoDatos, Class<?>[] aClaseDatos, String[] aTipoComponentes, Integer[] aLongitudes, Integer[] aUmbrales, Boolean[] aNonulos, String[][] aEspeciales, String[] aExps, String[] aVals){
+        secciones = new LinkedHashMap<String, PanelHook>();
+        botones = new LinkedHashMap<String, CampoHook>();
+        campos = new LinkedHashMap<String, CampoHook>();
+        labels = new LinkedHashMap<String, String>();
+        tipoDatosSQL = new LinkedHashMap<>();
+        tipoDatos = new LinkedHashMap<>();
+        tipoComponentes = new LinkedHashMap<>();
+        longitudes = new LinkedHashMap<>();
+        umbrales = new LinkedHashMap<>();
+        nonulos = new LinkedHashMap<>();
+        especiales = new LinkedHashMap<>();
+        exps = new LinkedHashMap<>();
+        vals = new LinkedHashMap<>();
+
+        for (int i = 0; i < camposNombres.length; i++) {
+            String nombre = camposNombres[i];
+            CampoHook componente = FormHook.makeGridBagPanel();
+            campos.put(camposNombres[i], componente);
+            labels.put(nombre, aLabels[i]);
+            tipoDatosSQL.put(nombre, aTipoDatos[i]);
+            tipoDatos.put(nombre, aClaseDatos[i]);
+            tipoComponentes.put(nombre, aTipoComponentes[i]);
+            longitudes.put(nombre, aLongitudes[i]);
+            umbrales.put(nombre, aUmbrales[i]);
+            nonulos.put(nombre, aNonulos[i]);
+            especiales.put(nombre, aEspeciales[i]);
+            exps.put(nombre, aExps[i]);
+            vals.put(nombre, aVals[i]);
+        }
+    }
+    public String[] obtenerExpresiones(){
+        return exps.values().toArray(new String[0]);
+    }
+    public String[] obtenerValidadores(){
+        return vals.values().toArray(new String[0]);
+    }
+    public Integer[] obtenerLongitudes(){
+        return longitudes.values().toArray(new Integer[0]);
+    }
+    public Integer[] obtenerUmbrales(){
+        return umbrales.values().toArray(new Integer[0]);
+    }
+    public Boolean[] obtenerNoNulos(){
+        return nonulos.values().toArray(new Boolean[0]);
+    }
+
+    /**
+     * Establece las dimensiones de todos los campos del formulario
+     * @param w tamaño horizontal, si es -1 no se efectuan cambios
+     * @param h tamaño vertical, si es -1 no se efectuan cambios
+     */
     public void setCamposSize(Integer w, Integer h){
 
         campos.forEach(new BiConsumer<String, CampoHook>() {
@@ -78,6 +133,10 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Establece las dimensiones de las etiquetas de todos los campos del formulario
+     * @param d la dimension
+     */
     public void setLabelsSize(Dimension d){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -86,6 +145,11 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Establece el color de texto de las etiquetas de todos los campos del formulario
+     * @param c el color
+     */
     public void setLabelsColor(Color c){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -94,6 +158,11 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Establece las dimenisones de todos los campos de entrada del formulario
+     * @param d dimension
+     */
     public void setInputsSize(Dimension d){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -102,6 +171,12 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Obtiene el boton especificado de este formularoi
+     * @param nom nombre del boton
+     * @return boton requerido
+     */
     public CampoHook getBoton(String nom){
         return botones.get(nom);
     }
@@ -129,6 +204,11 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Crea los elementos del formulario, labels e inputs especificando constraints
+     * @param gc constraints para agregar labels e inputs al campo con layout
+     */
     public void generar(GridBagConstraints gc){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -149,17 +229,47 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Extrae todos los datos de los campos de este formulario
+     * @return lista de datos
+     */
     public ArrayList<Object> extraer(){
         ArrayList<Object> datos = new ArrayList<>();
+
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
+
                  JComponent c = campoHook.getChild("input").componente;
-                 datos.add(extraerDato(c));
+                 Object crudo = extraerDato(c);
+                 if(!(crudo instanceof String)){
+                     datos.add(crudo);
+                 }else datos.add(convertir(crudo.toString(), tipoDatos.get(s)));
+
             }
         });
         return datos;
     }
+    public Object convertir(String dato, Class<?> tipo){
+        if(dato == null) return null;
+        switch (tipo.getSimpleName()){
+            case "String": return dato;
+            case "Integer": return Integer.parseInt(dato);
+            case "Float": return Float.parseFloat(dato);
+            case "Double": return Double.parseDouble(dato);
+            case "Boolean": return Boolean.parseBoolean(dato);
+            default:
+                System.out.println("Tipo de dato desconocido: " + tipo.getSimpleName());
+        }
+        return null;
+    }
+
+    /**
+     * Extrae los datos de entrada de un componente
+     * @param campo componente a procesar
+     * @return La informacion del campo
+     */
     public Object extraerDato(JComponent campo){
 
         Class<? extends JComponent> clase = campo.getClass();
@@ -178,19 +288,35 @@ public class FormHook {
             default: return null;
         }
     }
-    public void setCamposOpaque(boolean b){
+
+    /**
+     * Establece la opacidad de todos los campos del formulario
+     * @param opaco
+     */
+    public void setCamposOpaque(boolean opaco){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
-                campoHook.componente.setOpaque(b);
+                campoHook.componente.setOpaque(opaco);
             }
         });
     }
-    public void setCamposOpaque(boolean b, String ...campos){
+
+    /**
+     * Permite controlar la opacidad de ciertos campos del formulario
+     * @param opaco estado de opacidad
+     * @param campos nombres de los campos a modificar
+     */
+    public void setCamposOpaque(boolean opaco, String ...campos){
         for (String campo : campos) {
-            this.campos.get(campo).getComponente().setOpaque(b);
+            this.campos.get(campo).getComponente().setOpaque(opaco);
         }
     }
+
+    /**
+     * Agrega los campos de este formulario a un componente, especificando constraints
+     * @param comp componente a poblar con los campos
+     */
     public void attachCamposEn(CampoHook comp){
 
         campos.forEach(new BiConsumer<String, CampoHook>() {
@@ -201,6 +327,11 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Agrega los campos de este formulario a un componente, especificando constraints
+     * @param comp componente a poblar con los campos
+     * @param constraints constraints para agregar campos con layout
+     */
     public void attachCamposEn(CampoHook comp, Object constraints){
 
         campos.forEach(new BiConsumer<String, CampoHook>() {
@@ -211,6 +342,10 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Agrega los botones de este formulario a un componente
+     * @param comp componente a poblar con los botones
+     */
     public void attachBotonesEn(CampoHook comp){
         botones.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -219,6 +354,12 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Agrega los botones de este formulario a un componente, especificando constraints
+     * @param comp componente a poblar con los botones
+     * @param constraints constraints para agregar botones con layout
+     */
     public void attachBotonesEn(CampoHook comp, Object constraints){
         botones.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -227,6 +368,10 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Agrega las secciones de este formulario a un componente
+     * @param comp componente a poblar con las secciones del formulario
+     */
     public void attachSeccionesEn(CampoHook comp){
         secciones.forEach(new BiConsumer<String, PanelHook>() {
             @Override
@@ -235,6 +380,12 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Agrega las secciones de este formulario a un componente, especificando constraints
+     * @param comp componente a poblar con las secciones del formulario
+     * @param constraints constraints para agregar secciones con layout
+     */
     public void attachSeccionesEn(CampoHook comp, Object constraints){
         secciones.forEach(new BiConsumer<String, PanelHook>() {
             @Override
@@ -243,30 +394,58 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     *Agrega los campos de este formulario a una de sus secciones
+     * @param nombre nombre de la seccion del formulario
+     */
     public void attachEnSeccion(String nombre){
         attachCamposEn(secciones.get(nombre));
     }
+
+    /**
+     * Agrega los campos de este formulario a una de sus secciones, especificando constraints
+     * @param nombre nombre de la seccion del formulario
+     * @param constraints constraints para agregar los campos con un layout
+     */
     public void attachEnSeccion(String nombre, Object constraints){
         attachCamposEn(secciones.get(nombre), constraints);
     }
+
+    /**
+     * Permite agregar los botones de este formulario a una de sus secciones
+     * @param nombre nombre de la seccion del formulario
+     */
     public void attachBotonesEnSeccion(String nombre){
         attachBotonesEn(secciones.get(nombre));
     }
+
+    /**
+     * Permite agregar los botones de este formulario a una de sus secciones, especificando constraints
+     * @param nombre nombre de la seccion del formulario
+     * @param constraints constraints para agregar los botones con un layout
+     */
     public void attachBotonesEnSeccion(String nombre, Object constraints){
         attachBotonesEn(secciones.get(nombre), constraints);
     }
+
+    /**
+     * Agrega las secciones de este formulario a un panel
+     * @param p panel a poblar con las secciones
+     */
     public void attachSeccionesA(PanelHook p){
         attachSeccionesEn(p);
     }
     /**
-     * le das un tipo de componente valido y avienta el jcomponent equivalente
+     * Recibe un string con el tipo de componente a crear y devuelve su JComponent equivalente
      * @param tipo tipo de componente que se desea
      * @param regex restricciones para cajas de texto
-     * @return componente swin
+     * @return componente
      */
     static JComponent obtenerComponente(String tipo, String regex){
         switch (tipo){
             case "textfield": return makeRestrictedTextField(regex);
+            case "passfield": return makeRestrictedPassField(regex);
             case "datefield": return new JDatePicker();
             case "combobox": return  new JComboBox<>();
         }
@@ -275,13 +454,14 @@ public class FormHook {
     }
 
     /**
-     * Permite asignarle un regex a un campo de texto, para evitar que el usuario le ponga cosas que no son
+     * Permite asignarle una expresion regular a un campo de texto, para evitar entradas no permitidas
      * @param regex el regex a compilar
-     * @return la caja de texto bien despierta
+     * @return Caja de texto con eventos configurados
      */
     static JComponent makeRestrictedTextField(String regex){
 
         JTextField txt = new JTextField();
+
         txt.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -290,7 +470,7 @@ public class FormHook {
                 if(patron.matcher(testear).matches()){
                     super.keyTyped(e);
                 }else {
-                    //System.out.println("incorrec: "+ testear + "  " + regex);
+                    System.out.println("incorrec: "+ testear + "  " + regex);
                     e.consume();
                 }
             }
@@ -307,14 +487,57 @@ public class FormHook {
         });
         return txt;
     }
+    static JComponent makeRestrictedPassField(String regex){
+
+        JPasswordField txt = new JPasswordField();
+        txt.setEchoChar('*');
+        txt.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                Pattern patron = Pattern.compile(regex);
+                String testear = ""+ Arrays.toString(txt.getPassword()) +e.getKeyChar();
+                if(patron.matcher(testear).matches()){
+                    super.keyTyped(e);
+                }else {
+                    System.out.println("incorrec: "+ testear + "  " + regex);
+                    e.consume();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) { //el caracter esta permitido en el field
+                super.keyPressed(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyReleased(e);
+            }
+        });
+        return txt;
+    }
+
+    /**
+     * Crea un nuevo panel con FLowLayout
+     * @return Panel creado
+     */
     static PanelHook makeFlowPanel(){
         FlowLayout fl = new FlowLayout();
         fl.setAlignment(FlowLayout.CENTER);
         return new PanelHook(fl);
     }
+
+    /**
+     * Crea un nuevo panel con GridLayout para organizar elementos verticalmente
+     * @return Panel creado
+     */
     public static PanelHook makeVerticalListPanel(){
         return new PanelHook(new GridLayout(0, 1));
     }
+    /**
+     * Crea un nuevo panel con BoxLayout para organizar elementos verticalmente
+     * @return Panel creado
+     */
     public static PanelHook makeVerticalListPanel(int rows){
         PanelHook p = new PanelHook();
         p.setLayout(new BoxLayout(p.getComponente(), BoxLayout.PAGE_AXIS));
@@ -333,33 +556,29 @@ public class FormHook {
         });
         return p;
     }
+
+    /**
+     * Crea un nuevo panel con GridLayout para organizar elementos horizontalmente
+     * @return Panel creado
+     */
     public static PanelHook makeHorizontalListPanel(){
         return new PanelHook(new GridLayout(1, 0));
     }
+    /**
+     * Crea un nuevo panel con GridLayout para organizar elementos horizontalmente con varias columnas
+     * @param columns numero de columnas
+     * @return Panel creado
+     */
     public static PanelHook makeHorizontalListPanel(int columns){
         return new PanelHook(new GridLayout(1, columns));
     }
+
+    /**
+     * Crea un nuevo panel con GridbagLayout
+     * @return Panel creado
+     */
     public static PanelHook makeGridBagPanel(){
         PanelHook p = new PanelHook(new GridBagLayout());
-        p.getComponente().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                //p.getComponente().setBackground(Color.lightGray);
-                //System.out.println(p.id);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                //p.getComponente().setBackground(Color.white);
-            }
-        });
         return p;
     }
     public void agregarSeccion(String Id, PanelHook p){
@@ -389,7 +608,7 @@ public class FormHook {
             double weight = (double) ocupa /celdasTotal;
             freeWeight -= weight;
             c.weightx = weight;
-            p.addElementConstraint(Id+"_"+nombreDatos[i], datos[i], c);
+            p.addElementConstraint(nombreDatos[i], datos[i], c);
 
         }
         p.componente.addMouseListener(new MouseAdapter() {
@@ -535,11 +754,14 @@ public class FormHook {
                 ModeloBD.obtenerCampoNombresDe(ModeloBD.getModelo(modelo)),
                 ModeloBD.obtenerLabelsDe(modelo),
                 ModeloBD.obtenerCampoTiposSQLDe(modelo),
+                ModeloBD.obtenerCampoTiposDe(modelo),
                 ModeloBD.obtenerCamposComponentesDe(modelo),
                 ModeloBD.obtenerLongitudesDe(modelo),
+                ModeloBD.obtenerUmbralesDe(modelo),
                 ModeloBD.obtenerNoNulosDe(modelo),
                 ModeloBD.obtenerEspecialesDe(modelo),
-                ModeloBD.obtenerExpresionesDe(modelo)
+                ModeloBD.obtenerExpresionesDe(modelo),
+                ModeloBD.obtenerValidadoresDe(modelo)
         );
 
         ///AREAS DE LA VENTANA
@@ -567,7 +789,7 @@ public class FormHook {
         header.appendChild("title", title, makeConstraint(0,0,1,1,GridBagConstraints.BOTH));
         f.agregarSeccion("header", header);
         f.agregarSeccion("campos", form);
-
+        f.agregarSeccion("foot", foot);
         ///FORMULARIO
         GridBagConstraints gf = makeConstraint(0, -1, 1, 0, GridBagConstraints.HORIZONTAL);
         GridBagConstraints gc = makeConstraint(0, -1, 0, 0, GridBagConstraints.NONE);
@@ -603,11 +825,14 @@ public class FormHook {
                 Usuario.obtenerCamposNombres(),
                 Usuario.obtenerLabels(),
                 Usuario.obtenerCampoTiposSQL(),
+                Usuario.obtenerCampoTipos(),
                 Usuario.obtenerCamposComponentes(),
                 Usuario.obtenerLongitudes(),
+                Usuario.obtenerUmbrales(),
                 Usuario.obtenerNoNulos(),
                 Usuario.obtenerEspeciales(),
-                Usuario.obtenerExpresiones()
+                Usuario.obtenerExpresiones(),
+                Usuario.obtenerValidadores()
         );
         PanelHook vertical = FormHook.makeGridBagPanel().setBackground(Color.WHITE);
         PanelHook horizontal = FormHook.makeFlowPanel().setBackground(Color.WHITE);
@@ -751,62 +976,18 @@ public class FormHook {
         //rellenado de tabla
         FormHook.rellenarTabla(tabla, mds);
 
-
-        ///LECTURA DE REGISTROS Y LLENADO DE TABLA
-        tabla.getView().appendChild("reg1", FormHook.crearRegistroGridBag("reg1",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        tabla.getView().appendChild("reg2", FormHook.crearRegistroGridBag("reg2",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                64
-        ));
-        tabla.getView().appendChild("reg3", FormHook.crearRegistroGridBag("reg3",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        tabla.getView().appendChild("reg4", FormHook.crearRegistroGridBag("reg4",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                64
-        ));
-        tabla.getView().appendChild("reg5", FormHook.crearRegistroGridBag("reg5",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        tabla.getView().appendChild("reg6", FormHook.crearRegistroGridBag("reg6",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                64
-        ));
-        tabla.getView().appendChild("reg7", FormHook.crearRegistroGridBag("reg7",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        ///CONFIGURACION DE BOTONES
-
         return holder;
     }
-
+    public static ArrayList<PanelHook> obtenerRegistros(ScrollHook tabla){
+        ArrayList<PanelHook> regs = new ArrayList<>();
+        tabla.getView().children.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String id, CampoHook registro) {
+                regs.add((PanelHook)registro);
+            }
+        });
+        return regs;
+    }
     public static PanelHook makeSidebarBoton(String txt, Color bkg, Color dtl, Color txc, MouseAdapter adp){
         PanelHook panelBtn = FormHook.makeGridBagPanel().setBackground(bkg);
         PanelHook panelDtl = new PanelHook().setBackground(dtl);
@@ -833,6 +1014,9 @@ public class FormHook {
 
         return panelBtn;
     }
+    public static void limpiarTabla(ScrollHook tabla){
+        tabla.getView().removeChildren();
+    }
     public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> mds){
         if(mds != null){
             final int[] i = {0};
@@ -857,6 +1041,7 @@ public class FormHook {
                 }
             });
         }
+        tabla.getComponente().revalidate();
     }
     /**
      * elimina los campos cuyos nombres no coincidan con los nombres dados

@@ -39,7 +39,10 @@ public class ModeloBD implements Registrable {
         }
         return s;
     }
-    static Class<?>[] obtenerCampoTiposDe(Class<? extends Registrable> c){
+    public  static String[] obtenerCamposNombresDe(String modelo){
+        return obtenerCampoNombresDe(getModelo(modelo));
+    }
+    public static Class<?>[] obtenerCampoTiposDe(Class<? extends Registrable> c){
         Field[] f = c.getDeclaredFields();
         Class<?>[] s = new Class[f.length];
 
@@ -49,6 +52,9 @@ public class ModeloBD implements Registrable {
             i++;
         }
         return s;
+    }
+    public static Class<?>[] obtenerCampoTiposDe(String modelo){
+        return obtenerCampoTiposDe(getModelo(modelo));
     }
     private static Object invocar(String nombre, String metodo) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method mt = getModelo(nombre).getDeclaredMethod(metodo);
@@ -69,6 +75,9 @@ public class ModeloBD implements Registrable {
     public static Integer[] obtenerLongitudesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         return (Integer[]) invocar(modelo, "obtenerLongitudes");
     }
+    public static Integer[] obtenerUmbralesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (Integer[]) invocar(modelo, "obtenerUmbrales");
+    }
     public static Boolean[] obtenerNoNulosDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         return (Boolean[]) invocar(modelo, "obtenerNoNulos");
     }
@@ -77,6 +86,12 @@ public class ModeloBD implements Registrable {
     }
     public static String[] obtenerExpresionesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         return (String[]) invocar(modelo, "obtenerExpresiones");
+    }
+    public static String[] obtenerValidadoresDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (String[]) invocar(modelo, "obtenerValidadores");
+    }
+    public static Integer[] obtenerForaneasDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (Integer[]) invocar(modelo, "obtenerForaneas");
     }
     public static ModeloBD instanciar(String nombre, Object[] args){
         System.out.println(modelos);

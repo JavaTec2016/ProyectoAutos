@@ -3,23 +3,28 @@ package ErrorHandlin;
 import java.util.HashMap;
 
 public class ErrorHandler {
-    static int OBJECT_NOT_EXISTS = -204;
-    static int BAD_SQL = -84;
-    static int SQL_TOO_BIG = -101;
-    static int SQL_ILLEGAL_SYMBOL = -104;
-    static int SQL_MISSING_PERMISSION = -552;
-    static int SQL_DUPLICATE_ENTRY = -601;
-    static int SQL_CONSTRAINT_FAIL = -801;
-    static int RESULT_SET_OUT_OF_BOUNDS = -4476;
+    public static final int OBJECT_NOT_EXISTS = -204;
+    public static final int BAD_SQL = -84;
+    public static final int SQL_TOO_BIG = -101;
+    public static final int SQL_ILLEGAL_SYMBOL = -104;
+    public static final int SQL_MISSING_PERMISSION = -552;
+    public static final int SQL_DUPLICATE_ENTRY = -803;
+    public static final int SQL_CONSTRAINT_FAIL = -801;
+    public static final int RESULT_SET_OUT_OF_BOUNDS = -4476;
 
     static int AUTH_FAILED = -30082;
 
     static HashMap<Integer, Call> handlers = new HashMap<>();
-
-    static void registrarHandler(Integer codigo, Call fn){
+    static HashMap<Integer, String> errorMsg = new HashMap<>();
+    public static void registrarHandler(Integer codigo, Call fn){
         handlers.put(codigo, fn);
     }
-    static void ejecutarHandler(Integer codigo, Object ...args){
+    public static void ejecutarHandler(Integer codigo, Object ...args){
+        if(!handlers.containsKey(codigo)){
+            System.out.println("HANDLER: Codigo desconocido " + codigo);
+            return;
+        }
         handlers.get(codigo).run(args);
     }
+
 }

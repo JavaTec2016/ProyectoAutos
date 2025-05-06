@@ -1,24 +1,27 @@
 package Vista;
 
-import FormTools.CampoHook;
+import ErrorHandlin.ErrorHandler;
+import ErrorHandlin.Validador;
 import FormTools.FormHook;
 import FormTools.ScrollHook;
 import FormTools.PanelHook;
 import Modelo.Cliente;
 import Modelo.ModeloBD;
+import Modelo.Registrable;
 import Modelo.Usuario;
 import conexion.ConexionBD;
 import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -26,6 +29,11 @@ public class Ventana extends JFrame {
     PanelHook ventanaPrincipal;
     PanelHook ventanaLogin;
     CardLayout layout = null;
+
+    String tablaActual = null;
+    ArrayList<String> selecNombres = null;
+    ArrayList<String> filtroNombres = null;
+    ArrayList<Object> filtroValores = null;
     public Ventana(){
         setSize(500, 500);
 
@@ -90,14 +98,93 @@ public class Ventana extends JFrame {
         add(ventanaPrincipal.componente, "principal");
 
     }
-    public static int conectar(String usuario, String pass, String bd){
+    public static HashMap<Integer, Integer> obtenerErrores(ArrayList<Object> datos, String[] regex, Integer[] longitudes, Boolean[] nonulos, Integer[] umbral){
+        HashMap<Integer, Integer> o = new HashMap<>();
+        for (int i = 0; i < datos.size(); i++) {
+            String n = null;
+            if(datos.get(i) != null) n = datos.get(i).toString();
+            int code = Validador.probarString(n, regex[i], longitudes[i], nonulos[i], umbral[i]);
+            if(code != 0) o.put(i, code);
+        }
+        return o;
+    }
+    public void handlearError(int codigo, Object... args){
+        ErrorHandler.ejecutarHandler(codigo, args);
+    }
+    //registra todos los handlers para manejar errores
+    public static void registrarHandlers(Ventana v){
+
+        ///VALIDACION POSTERIOR
+
+        ///data[0] sera el nombre del campo en este error
+        ///data[1] sera la longitud maxima del dato
+        ///data[2] sera el umbral del dato
+        ErrorHandler.registrarHandler(Validador.NULL, data -> {
+            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe ser nulo", "Error de datos", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(Validador.TOO_LONG, data -> {
+            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe exceder "+data[1]+" caracteres", "Error de datos", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(Validador.TOO_SHORT, data -> {
+            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe ser menor a "+data[2]+" caracteres", "Error de datos", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(Validador.REGEX_FAIL, data -> {
+            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no es válido", "Error de datos", JOptionPane.ERROR_MESSAGE);
+        });
+
+        ////VALIDACION DE SQL
+
+        ///data[0] es el nombre del modelo
+        ErrorHandler.registrarHandler(ErrorHandler.OBJECT_NOT_EXISTS, data -> {
+            JOptionPane.showMessageDialog(v, "La tabla '"+data[0].toString()+"' no existe", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.BAD_SQL, data -> {
+            JOptionPane.showMessageDialog(v, "la instrucción dada no es válida", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_TOO_BIG, data -> {
+            JOptionPane.showMessageDialog(v, "la instrucción excede el tamaño máximo soportado", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_ILLEGAL_SYMBOL, data -> {
+            JOptionPane.showMessageDialog(v, "la instrucción contiene simbolos no permitidos", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_MISSING_PERMISSION, data -> {
+            JOptionPane.showMessageDialog(v, "No tiene permiso para realizar esta acción", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
+            JOptionPane.showMessageDialog(v, "Ya hay un registro con esa información", "Error de inserción", JOptionPane.ERROR_MESSAGE);
+        });
+        ///luego data son las llaves foraneas que pueden fallar
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_CONSTRAINT_FAIL, data -> {
+            try {
+                String d = "";
+                String[] dataa = ModeloBD.obtenerCamposNombresDe(data[0].toString());
+                Integer[] idxs = ModeloBD.obtenerPrimariasDe(data[0].toString());
+
+                for (int idx : idxs) {
+                    d += dataa[idx]+", ";
+                }
+                d=d.substring(0, data.length-2);
+                JOptionPane.showMessageDialog(v, "Uno o más de los datos no se encuentra en la base de datos: \n"+d, "Error de inserción", JOptionPane.ERROR_MESSAGE);
+
+            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+                JOptionPane.showMessageDialog(v, "Algunos de los datos no se encuentran en la base de datos", "Error de inserción", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                return;
+            }
+
+        });
+        ErrorHandler.registrarHandler(ErrorHandler.RESULT_SET_OUT_OF_BOUNDS, data -> {
+            JOptionPane.showMessageDialog(v, "Ocurrió un error al obtener datos de un registro", "Error de consulta", JOptionPane.ERROR_MESSAGE);
+        });
+    }
+    public int conectar(String usuario, String pass, String bd){
         try {
             ConexionBD.getConector().abrirConexion(usuario, pass, bd);
         } catch (SQLException e) {
             System.out.println("ERROR AL CONECTAR: "+e.getErrorCode());
             return e.getErrorCode();
         } catch (NullPointerException e){
-            System.out.println("NULOS: " + usuario + " , " + pass + " >> " + bd);
+            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
             return 1;
         }
         return 0;
@@ -112,7 +199,7 @@ public class Ventana extends JFrame {
         }
         return null;
     }
-    public static void agregar(ModeloBD modelo){
+    public void agregar(ModeloBD modelo){
         try {
             DAO.d.agregar(modelo);
         } catch (IllegalAccessException e) {
@@ -120,6 +207,7 @@ public class Ventana extends JFrame {
             throw new RuntimeException(e);
         } catch (SQLException e) {
             System.out.println("Error de instruccion: " + e.getErrorCode());
+            handlearError(e.getErrorCode(), modelo.getClass().getSimpleName());
         }
     }
     public static void modificar(ModeloBD modelo, Object[] primariasOG){
@@ -201,10 +289,79 @@ public class Ventana extends JFrame {
     public void configurarABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         ArrayList<ModeloBD> ar = realizarConsulta(tabla, null, null, null);
         ventanaPrincipal = actualizarVentana("principal", FormHook.crearABCC(tabla, ar));
+        PanelHook formulario = (PanelHook) ventanaPrincipal.getChild("sidebar");
+
+        actualizarTablaABCC((ScrollHook)ventanaPrincipal.childPath("main/tableHolder/tabla"), tabla, (String[]) null, null, null);
+        ((JButton)formulario.getChild("foot").getChild("btnAgregar").componente).addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FormHook f = formulario.form;
+                ArrayList<Object> datos = f.extraer();
+
+                HashMap<Integer, Integer> errs = obtenerErrores(datos, f.obtenerValidadores(), f.obtenerLongitudes(), f.obtenerNoNulos(), f.obtenerUmbrales());
+                if(!errs.isEmpty()){
+                    try {
+                        String[] nombres = ModeloBD.obtenerLabelsDe(tabla);
+                        Integer[] longi = ModeloBD.obtenerLongitudesDe(tabla);
+                        Integer[] umbr = ModeloBD.obtenerUmbralesDe(tabla);
+                        int idx = errs.keySet().toArray(new Integer[0])[0];
+                        int err = errs.values().toArray(new Integer[0])[0];
+                        handlearError(err, nombres[idx], longi[idx], umbr[idx]);
+
+                    } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                }else{
+                    Object[] args = datos.toArray();
+                    ModeloBD m = ModeloBD.instanciar(tabla, args);
+                    agregar(m);
+                    ScrollHook sc = (ScrollHook) ventanaPrincipal.getChild("main").getChild("tableHolder").getChild("tabla");
+                    actualizarTablaABCC(sc, tabla, (String[]) null, null, null);
+                }
+            }
+        });
+        tablaActual = tabla;
 
     }
-    public void ConfigurarABCC1(String tabla){
+    public void configurarBotonesRegistros(ScrollHook tabla){
+        Ventana v = this;
+        ArrayList<PanelHook> regs = FormHook.obtenerRegistros(tabla);
+        for (PanelHook reg : regs) {
+            ((JButton)reg.getChild("btnEliminar").componente).addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int eleccion = JOptionPane.showOptionDialog(v,  "Confirme la elminacion del registro", "Confirmar eliminacion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                            new Object[]{"Continuar", "Cancelar"}, "Continuar");
 
+                    if(eleccion == 0){
+                        System.out.println("ELIMINAR WIP");
+                        actualizarTablaABCC(tabla, tablaActual, selecNombres, filtroNombres, filtroValores);
+                    }else return;
+                }
+            });
+        }
+    }
+    public void actualizarTablaABCC(ScrollHook s, String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores){
+        ArrayList<ModeloBD> m = realizarConsulta(tabla, selecNombres, filtroNombres, filtroValores);
+        if(m == null) return;
+        FormHook.limpiarTabla(s);
+        FormHook.rellenarTabla(s, m);
+        configurarBotonesRegistros(s);
+    }
+    public void actualizarTablaABCC(ScrollHook s, String tabla, ArrayList<String> selecNombres, ArrayList<String> filtroNombres, ArrayList<Object> filtroValores){
+        String[] sn = null;
+        String[] fn = null;
+        Object[] fv = null;
+        if(selecNombres!=null)sn = selecNombres.toArray(new String[0]);
+        if(filtroNombres!=null)fn = filtroNombres.toArray(new String[0]);
+        if(filtroValores!=null)fv = filtroValores.toArray();
+
+        ArrayList<ModeloBD> m = realizarConsulta(tabla, sn, fn, fv);
+        if(m == null) return;
+        FormHook.limpiarTabla(s);
+        FormHook.rellenarTabla(s, m);
+        configurarBotonesRegistros(s);
     }
     public static void main0(String[] args) {
         ModeloBD.registrarModelo(Cliente.class);
@@ -228,7 +385,7 @@ public class Ventana extends JFrame {
                         try {
 
                             ConexionBD.getConector().ejecutarScriptInicial();
-                            agregar(new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si"));
+                            //agregar(new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si"));
                             modificar(new Cliente(2, "Ernest", "Jui", "4941002031", "Jerekistan", "Chida", "88Bis", "Ernest@mail.si"),
                                     new Object[]{0});
                             System.out.println(realizarConsulta("Cliente", null, null, null));
@@ -253,12 +410,15 @@ public class Ventana extends JFrame {
     }
 
     public static void main(String[] args) {
-        ModeloBD.registrarModelo(Cliente.class);
 
+        ModeloBD.registrarModelo(Cliente.class);
+        ModeloBD.registrarModelo(Usuario.class);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Ventana v = new Ventana();
+                Ventana.registrarHandlers(v);
+
                 v.setVisible(true);
                 v.cambiarALogin();
             }

@@ -38,6 +38,9 @@ public class Cliente extends ModeloBD {
     public static Integer[] obtenerLongitudes(){
         return new Integer[]{-1, 32, 32, 10, 50, 50, 10, 50};
     }
+    public static Integer[] obtenerUmbrales(){
+        return new Integer[]{1, 0, 0, 8, 0, 0, 0, 0};
+    }
     public static Boolean[] obtenerNoNulos(){
         return new Boolean[]{true, true, false, true, true, true, false, false};
     }
@@ -50,6 +53,9 @@ public class Cliente extends ModeloBD {
     public static Integer[] obtenerPrimarias(){
         return new Integer[]{0};
     }
+    public static Integer[] obtenerForaneas(){
+        return new Integer[]{};
+    }
     public static String[] obtenerExpresiones(){
         return new String[]{
                 "[0-9]*",
@@ -59,7 +65,19 @@ public class Cliente extends ModeloBD {
                 "([A-Za-z]|\\s)*",
                 "([A-Za-z0-9]|\\s|.|,)*",
                 "([A-Za-z0-9]|\\s)*",
-                "[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*" //estandares truco
+                "[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~@-]*",
+        };
+    }
+    public static String[] obtenerValidadores(){
+        return new String[]{
+                "[0-9]*",
+                "([A-Za-z]|\\s)*",
+                "([A-Za-z]|\\s)*" ,
+                "[0-9]{0,10}",
+                "([A-Za-z]|\\s)*",
+                "([A-Za-z0-9]|\\s|.|,)*",
+                "([A-Za-z0-9]|\\s)*",
+                "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$" //estandares truco
         };
     }
 

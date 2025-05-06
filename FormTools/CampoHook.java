@@ -3,8 +3,11 @@ package FormTools;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
 
 public class CampoHook {
     public JComponent componente;
@@ -70,6 +73,14 @@ public class CampoHook {
         componente.remove(children.get(id).componente);
         children.remove(id);
     }
+    public void removeChildren(){
+        String[] keys = children.keySet().toArray(new String[0]);
+        for (String key : keys) {
+            System.out.println("removeando: " + key);
+            removeChild(key);
+        }
+        componente.revalidate();
+    }
     public JComponent getComponente() {
         return componente;
     }
@@ -94,5 +105,20 @@ public class CampoHook {
     public CampoHook setSize(Dimension d){
         componente.setSize(d);
         return this;
+    }
+
+    /**
+     * Recibe una ruta mediante la cual buscar un nodo dentro de una cadena de campos hijos
+     * @param ruta ruta con todos los nombres de los campos hijos a atravesar, separados por diagonales
+     * @return campo hijo final, o null si no existe
+     */
+    public CampoHook childPath(String ruta){
+        String[] partes = ruta.split("/");
+        CampoHook ret = this;
+        for (String parte : partes) {
+            if(ret.children.containsKey(parte)) ret = ret.getChild(parte);
+            else return null;
+        }
+        return ret;
     }
 }

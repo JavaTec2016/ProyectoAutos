@@ -29,11 +29,14 @@ public class Usuario extends ModeloBD {
     public static Integer[] obtenerLongitudes(){
         return new Integer[]{50, 50, -1, -1, -1};
     }
+    public static Integer[] obtenerUmbrales(){
+        return new Integer[]{0, 8, 0, 0, 0};
+    }
     public static Boolean[] obtenerNoNulos(){
         return new Boolean[]{true, true, true, true, true};
     }
     public static String[] obtenerCamposComponentes(){
-        return new String[]{"textfield", "textfield", "checkbox", "checkbox", "checkbox"};
+        return new String[]{"textfield", "passfield", "checkbox", "checkbox", "checkbox"};
     }
     public static Integer[] obtenerPrimarias(){
         return new Integer[]{0};
@@ -49,6 +52,9 @@ public class Usuario extends ModeloBD {
                 "",
                 ""
         };
+    }
+    public static String[] obtenerValidadores(){
+        return  obtenerExpresiones();
     }
 
     @Override
