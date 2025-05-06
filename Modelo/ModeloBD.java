@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class ModeloBD implements Registrable {
     static HashMap<String, Class<? extends ModeloBD>> modelos = new HashMap<>();
@@ -62,6 +63,21 @@ public class ModeloBD implements Registrable {
     public static Integer[] obtenerPrimariasDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         return (Integer[])invocar(modelo, "obtenerPrimarias");
     }
+    public static String[] obtenerCamposComponentesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (String[]) invocar(modelo, "obtenerCamposComponentes");
+    }
+    public static Integer[] obtenerLongitudesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (Integer[]) invocar(modelo, "obtenerLongitudes");
+    }
+    public static Boolean[] obtenerNoNulosDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (Boolean[]) invocar(modelo, "obtenerNoNulos");
+    }
+    public static String[][] obtenerEspecialesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (String[][]) invocar(modelo, "obtenerEspeciales");
+    }
+    public static String[] obtenerExpresionesDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return (String[]) invocar(modelo, "obtenerExpresiones");
+    }
     public static ModeloBD instanciar(String nombre, Object[] args){
         System.out.println(modelos);
         Class<? extends ModeloBD> modlemombo = getModelo(nombre);
@@ -73,4 +89,5 @@ public class ModeloBD implements Registrable {
             throw new RuntimeException(e);
         }
     }
+    public LinkedHashMap<String, Object> getInfoImportante(){return null;}
 }

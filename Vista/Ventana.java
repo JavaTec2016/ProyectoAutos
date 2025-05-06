@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -129,13 +130,14 @@ public class Ventana extends JFrame {
             e.printStackTrace();
         }
     }
-
+    public PanelHook actualizarVentana(String id, PanelHook p){
+        add(p.componente, id);
+        return p;
+    }
     public void cambiarALogin(){
         if(ventanaLogin == null){
             ventanaLogin = FormHook.crearLogin(getSize());
             add(ventanaLogin.componente, "login");
-            ventanaPrincipal = FormHook.crearABCC(Cliente.class);
-            add(ventanaPrincipal.componente, "principal");
 
             ventanaLogin.form.getBoton("btnLogear").componente.addMouseListener(new MouseAdapter() {
                 @Override
@@ -144,15 +146,65 @@ public class Ventana extends JFrame {
                     int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
                             conectar("SANTIAGO", "santiago", "Autos");
                     if(cod!=0) return;
+
+                    try {
+                        configurarABCC("Cliente");
+                    } catch (InvocationTargetException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (NoSuchMethodException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IllegalAccessException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
                     layout.show(getContentPane(),"principal");
                     System.out.println(getContentPane().getSize());
                     System.out.println(ventanaPrincipal.componente.getSize());
-                    //realizarConsulta("Cliente", null, null, null);
+
                 }
             });
         }
         layout.show(getContentPane(), "login");
         revalidate();
+    }
+    public void configurarbtnLogout(PanelHook v){
+        PanelHook logo = (PanelHook) v.getChild("sidebar").getChild("logout").getChild("btn");
+
+        logo.componente.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                try {
+                    ConexionBD.getConector().cerrarConexion();
+                    layout.show(getContentPane(), "login");
+                } catch (SQLException ex) {
+                    System.out.println("Error al cerrar sesion: ");
+                    ex.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                logo.setBackground(Color.DARK_GRAY);
+                logo.getChild("detail").setBackground(Color.white);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                logo.setBackground(new Color(102, 102, 102));
+                logo.getChild("detail").setBackground(Color.cyan);
+            }
+        });
+    }
+    public void configurarABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        ArrayList<ModeloBD> ar = realizarConsulta(tabla, null, null, null);
+        ventanaPrincipal = actualizarVentana("principal", FormHook.crearABCC(tabla, ar));
+
+    }
+    public void ConfigurarABCC1(String tabla){
+
     }
     public static void main0(String[] args) {
         ModeloBD.registrarModelo(Cliente.class);

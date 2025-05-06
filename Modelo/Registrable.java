@@ -1,5 +1,7 @@
 package Modelo;
 
+import java.util.LinkedHashMap;
+
 public interface Registrable {
     Object[] obtenerDatos() throws IllegalAccessException;
 
@@ -13,4 +15,6 @@ public interface Registrable {
     static String[] obtenerExpresiones(){ return  null; }
     static String[][] obtenerEspeciales(){ return null; }
     static Integer[] obtenerPrimarias(){ return null; }
+    LinkedHashMap<String, Object> getInfoImportante() throws IllegalAccessException;
+
 }

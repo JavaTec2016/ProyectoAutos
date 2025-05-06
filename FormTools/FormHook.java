@@ -3,7 +3,6 @@ package FormTools;
 import Modelo.ModeloBD;
 import Modelo.Usuario;
 import conexion.ConexionBD;
-import controlador.DAO;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
@@ -12,12 +11,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.SQLException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 public class FormHook {
@@ -51,7 +50,7 @@ public class FormHook {
 
         for (int i = 0; i < camposNombres.length; i++) {
             String nombre = camposNombres[i];
-            CampoHook componente = FormHook.makeFlowPanel();
+            CampoHook componente = FormHook.makeGridBagPanel();
             campos.put(camposNombres[i], componente);
             labels.put(nombre, aLabels[i]);
             tipoDatos.put(nombre, aTipoDatos[i]);
@@ -75,7 +74,31 @@ public class FormHook {
                 if(h == null) hg = campoHook.componente.getHeight();
                 else hg = h;
 
-                campoHook.componente.setSize(wd, hg);
+                campoHook.setPreferredSize(new Dimension(wd, hg));
+            }
+        });
+    }
+    public void setLabelsSize(Dimension d){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                campoHook.getChild("label").setPreferredSize(d);
+            }
+        });
+    }
+    public void setLabelsColor(Color c){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                campoHook.getChild("label").setForeground(c);
+            }
+        });
+    }
+    public void setInputsSize(Dimension d){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                campoHook.getChild("input").setPreferredSize(d);
             }
         });
     }
@@ -95,9 +118,29 @@ public class FormHook {
                     CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
                     CampoHook label = new CampoHook(new JLabel(labels.get(s)));
 
+                    GridBagConstraints gc = makeConstraint(0, -1, GridBagConstraints.NONE);
+                    campoHook.appendChild("label", label, gc);
+                    campoHook.appendChild("input", input, gc);
 
-                    campoHook.appendChild("label", label);
-                    campoHook.appendChild("input", input);
+                }catch (NullPointerException e){
+                    System.out.println("El campo no se pudo agregar: " + tipoComponentes.get(s));
+                }
+
+            }
+        });
+    }
+    public void generar(GridBagConstraints gc){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                //System.out.println(s + " APENDACION " + campoHook.componente);
+                //asignar un panel con flow o box layout al campo, luego ponele label e input
+                try{
+                    CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
+                    CampoHook label = new CampoHook(new JLabel(labels.get(s)));
+
+                    campoHook.appendChild("label", label, gc);
+                    campoHook.appendChild("input", input, gc);
 
                 }catch (NullPointerException e){
                     System.out.println("El campo no se pudo agregar: " + tipoComponentes.get(s));
@@ -437,6 +480,124 @@ public class FormHook {
     public JComponent getCampoComp(String nombre){
         return campos.get(nombre).componente;
     }
+    public static ImageHook crearImagen(String nombre){
+
+        ImageHook i = new ImageHook("/assets/usr.png");
+        return i;
+    }
+    public static void crearImagenLabel(String nombre){
+
+    }
+    public static PanelHook makeUserPanel(String usr){
+        PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102))
+                .setPreferredSize(new Dimension(200, 0));
+        sidebar.componente.setMinimumSize(new Dimension(200, 10));
+
+        PanelHook panelUser = FormHook.makeGridBagPanel();
+        PanelHook panelBtns = FormHook.makeGridBagPanel();
+        PanelHook panelLogout = FormHook.makeGridBagPanel();
+
+        panelUser.componente.setOpaque(false);
+        panelBtns.componente.setOpaque(false);
+        panelLogout.componente.setOpaque(false);
+
+        PanelHook i = new PanelHook();
+        CampoHook nom = new CampoHook(new JLabel(usr))
+                .setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15))
+                .setForeground(Color.white);
+
+        i.componente = FormHook.crearImagen("usr");
+        i.componente.setOpaque(false);
+
+        GridBagConstraints gp = FormHook.makeConstraint(0, -1, GridBagConstraints.NONE);
+        gp.insets.top = 5;
+        panelUser.appendChild("imagen", i, gp);
+        gp.insets.bottom = 5;
+        panelUser.appendChild("nombre", nom, gp);
+
+        gp = FormHook.makeConstraint(0, -1, 1, 0.15f, GridBagConstraints.BOTH);
+        sidebar.appendChild("user", panelUser, gp);
+        gp.weighty = .8;
+        sidebar.appendChild("btns", panelBtns, gp);
+        gp.weighty = 1-gp.weighty;
+        sidebar.appendChild("logout", panelLogout, gp);
+
+        ///BOTONES EN PANEL LATERAL
+        gp.fill = GridBagConstraints.HORIZONTAL;
+        PanelHook btnLogout = FormHook.makeSidebarBoton("Cerrar sesión", sidebar.componente.getBackground(), Color.CYAN, Color.white);
+        btnLogout.setPreferredSize(new Dimension(0, 50));
+        panelLogout.appendChild("btn", btnLogout, gp);
+
+        return sidebar;
+    }
+    public static PanelHook crearFormulario(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        FormHook f = new FormHook(
+                ModeloBD.obtenerCampoNombresDe(ModeloBD.getModelo(modelo)),
+                ModeloBD.obtenerLabelsDe(modelo),
+                ModeloBD.obtenerCampoTiposSQLDe(modelo),
+                ModeloBD.obtenerCamposComponentesDe(modelo),
+                ModeloBD.obtenerLongitudesDe(modelo),
+                ModeloBD.obtenerNoNulosDe(modelo),
+                ModeloBD.obtenerEspecialesDe(modelo),
+                ModeloBD.obtenerExpresionesDe(modelo)
+        );
+
+        ///AREAS DE LA VENTANA
+
+        PanelHook holder = makeGridBagPanel().setBackground(new Color(102, 102, 102));
+        PanelHook header = makeGridBagPanel().setBackground(Color.white);
+        PanelHook form = makeGridBagPanel();
+        PanelHook foot = makeGridBagPanel();
+        form.componente.setOpaque(false);
+        foot.componente.setOpaque(false);
+
+        GridBagConstraints gh = makeConstraint(0, -1, 1, 0.15f, GridBagConstraints.BOTH);
+        holder.appendChild("header", header, gh);
+        gh.weighty = 0.8;
+        holder.appendChild("campos", form, gh);
+        gh.weighty = 1 - gh.weighty-0.15;
+        holder.appendChild("foot", foot, gh);
+
+        ///TITULO
+
+        CampoHook title = new CampoHook(new JLabel(modelo+"s"))
+                .setForeground(Color.blue)
+                .setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+
+        header.appendChild("title", title, makeConstraint(0,0,1,1,GridBagConstraints.BOTH));
+        f.agregarSeccion("header", header);
+        f.agregarSeccion("campos", form);
+
+        ///FORMULARIO
+        GridBagConstraints gf = makeConstraint(0, -1, 1, 0, GridBagConstraints.HORIZONTAL);
+        GridBagConstraints gc = makeConstraint(0, -1, 0, 0, GridBagConstraints.NONE);
+        gc.insets.top = 4;
+        gc.insets.bottom = 4;
+        f.generar(gc);
+        f.attachBotonesEnSeccion("foot");
+        f.setLabelsSize(new Dimension(300, 20));
+        f.setInputsSize(new Dimension(300, 30));
+        f.setLabelsColor(Color.white);
+        f.setCamposOpaque(false);
+        f.attachCamposEn(form, gf);
+
+        ///FOOT (nomas botones
+
+        CampoHook btnAgregar = FormHook.makeFormBoton("AGREGAR", Color.GRAY, Color.CYAN);
+        GridBagConstraints gb = makeConstraint(0, 0, 1, 1, GridBagConstraints.BOTH);
+        gb.insets = new Insets(10,10,10,10);
+        foot.appendChild("btnAgregar", btnAgregar, gb);
+
+        holder.form = f;
+        return holder;
+    }
+    public static CampoHook makeFormBoton(String txt, Color bkg, Color frg){
+        CampoHook c = new CampoHook(new JButton(txt));
+        c.setBackground(bkg);
+        c.setForeground(frg);
+        c.componente.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        return c;
+    }
     public static PanelHook crearLogin(Dimension d){
         FormHook f = new FormHook(
                 Usuario.obtenerCamposNombres(),
@@ -491,16 +652,16 @@ public class FormHook {
         );
         f.whiteList("usuario", "password");
         f.setCamposOpaque(false);
-        ((FlowLayout)f.getCampoComp("usuario").getLayout()).setAlignment(FlowLayout.LEFT);
-        ((FlowLayout)f.getCampoComp("password").getLayout()).setAlignment(FlowLayout.LEFT);
+        //((FlowLayout)f.getCampoComp("usuario").getLayout()).setAlignment(FlowLayout.LEFT);
+        //((FlowLayout)f.getCampoComp("password").getLayout()).setAlignment(FlowLayout.LEFT);
 
         //formatear campos de logoe
 
-        f.campos.get("usuario").getChild("label").setPreferredSize(new Dimension(620, 70));
+        f.campos.get("usuario").getChild("label").setPreferredSize(new Dimension(600, 70));
         ((JLabel)f.campos.get("usuario").getChild("label").componente).setFont(
                 new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 22)
         );
-
+        f.campos.get("password").getChild("label").setPreferredSize(new Dimension(600, 70));
         ((JLabel)f.campos.get("password").getChild("label").componente).setFont(
                 new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 22)
         );
@@ -549,7 +710,7 @@ public class FormHook {
         panelLogin.form = f;
         return panelLogin;
     }
-    public static PanelHook crearABCC(Class <? extends ModeloBD> m){
+    public static PanelHook crearABCC(String modelo, ArrayList<ModeloBD> mds) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         PanelHook holder = FormHook.makeGridBagPanel().setBackground(Color.white);
         PanelHook topbar = FormHook.makeGridBagPanel().setBackground(new Color(0, 102, 204));
@@ -557,19 +718,20 @@ public class FormHook {
         PanelHook main = FormHook.makeGridBagPanel();
         ScrollHook tabla = FormHook.crearScroll(0);
 
-        PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102))
-                .setPreferredSize(new Dimension(200, 0));
-        sidebar.componente.setMinimumSize(new Dimension(200, 10));
+        PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102));
 
         //gc del panel lateral
         GridBagConstraints gc = FormHook.makeConstraint(-1, -1, 0, 1, GridBagConstraints.VERTICAL);
+
+
+        ////INFO DE USUARIO EN PANEL LATERAL o de formulario
+        sidebar = FormHook.crearFormulario(modelo);//FormHook.makeUserPanel("JEUSER");
+        sidebar.setPreferredSize(new Dimension(400, 0));
+        sidebar.componente.setMinimumSize(new Dimension(400, 0));
         holder.appendChild("sidebar", sidebar, gc);
 
-        ////INFO DE USUARIO EN PANEL LATERAL
-
-        ///BOTONES EN PANEL LATERAL
-
         //gc de la info main
+
         gc.fill = GridBagConstraints.BOTH;
         gc.weightx = .75;
         gc.weighty = 1;
@@ -585,6 +747,10 @@ public class FormHook {
 
         gc = FormHook.makeConstraint(-1, -1, 1.0f, 1.0f, GridBagConstraints.BOTH);
         tableHolder.appendChild("tabla", tabla, gc);
+
+        //rellenado de tabla
+        FormHook.rellenarTabla(tabla, mds);
+
 
         ///LECTURA DE REGISTROS Y LLENADO DE TABLA
         tabla.getView().appendChild("reg1", FormHook.crearRegistroGridBag("reg1",
@@ -639,6 +805,58 @@ public class FormHook {
         ///CONFIGURACION DE BOTONES
 
         return holder;
+    }
+
+    public static PanelHook makeSidebarBoton(String txt, Color bkg, Color dtl, Color txc, MouseAdapter adp){
+        PanelHook panelBtn = FormHook.makeGridBagPanel().setBackground(bkg);
+        PanelHook panelDtl = new PanelHook().setBackground(dtl);
+        CampoHook lbl = new CampoHook(new JLabel(txt)).setForeground(txc);
+
+        GridBagConstraints gc = makeConstraint(-1, -1, 0.1f, 1, GridBagConstraints.BOTH);
+        panelBtn.appendChild("detail", panelDtl, gc);
+        gc.weightx = 1 - gc.weightx;
+        panelBtn.appendChild("label", lbl, gc);
+
+        panelBtn.componente.addMouseListener(adp);
+        return panelBtn;
+    }
+    public static PanelHook makeSidebarBoton(String txt, Color bkg, Color dtl, Color txc){
+        PanelHook panelBtn = FormHook.makeGridBagPanel().setBackground(bkg);
+        PanelHook panelDtl = new PanelHook().setBackground(dtl);
+        CampoHook lbl = new CampoHook(new JLabel(txt)).setForeground(txc);
+
+        lbl.setAlignment(SwingConstants.CENTER, SwingConstants.CENTER);
+        GridBagConstraints gc = makeConstraint(-1, -1, 0.075f, 1, GridBagConstraints.BOTH);
+        panelBtn.appendChild("detail", panelDtl, gc);
+        gc.weightx = 1 - gc.weightx;
+        panelBtn.appendChild("label", lbl, gc);
+
+        return panelBtn;
+    }
+    public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> mds){
+        if(mds != null){
+            final int[] i = {0};
+            mds.forEach(new Consumer<ModeloBD>() {
+                @Override
+                public void accept(ModeloBD modeloBD) {
+
+                    LinkedHashMap<String, Object> datos = modeloBD.getInfoImportante();
+                    JComponent[] display = new JComponent[datos.size()];
+                    String[] ids = new String[datos.size()];
+                    int[] tamaniosAuto = new int[datos.size()];
+                    int tamanioTotal = datos.size();
+                    for (int i = 0; i < display.length; i++) {
+                        display[i] = new JLabel(datos.values().stream().toList().get(i).toString());
+                        ids[i] = datos.keySet().stream().toList().get(i);
+                        tamaniosAuto[i] = 1;
+                    }
+
+                    PanelHook reg = FormHook.crearRegistroGridBag(""+(i[0]), display, ids, tamaniosAuto, tamanioTotal, 100);
+                    tabla.getView().appendChild(""+i[0], reg);
+                    i[0]++;
+                }
+            });
+        }
     }
     /**
      * elimina los campos cuyos nombres no coincidan con los nombres dados
