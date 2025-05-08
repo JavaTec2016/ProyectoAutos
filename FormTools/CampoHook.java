@@ -76,7 +76,6 @@ public class CampoHook {
     public void removeChildren(){
         String[] keys = children.keySet().toArray(new String[0]);
         for (String key : keys) {
-            System.out.println("removeando: " + key);
             removeChild(key);
         }
         componente.revalidate();

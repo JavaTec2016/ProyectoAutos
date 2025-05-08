@@ -61,7 +61,6 @@ public class DAO {
             sql = sql+fil;
         }
 
-        System.out.println(sql);
         conexion.prepararStatement(sql, val);
         rs = conexion.ejecutarSQL();
         return rs;
@@ -107,8 +106,7 @@ public class DAO {
             }
             where = where.substring(0, where.length()-5);
 
-            System.out.println(sql+where);
-            System.out.println(Arrays.toString(valoresFinal));
+
             conexion.prepararStatement(sql+where, valoresFinal);
             conexion.ejecutarDML();
 

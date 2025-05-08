@@ -12,6 +12,18 @@ public class ModeloBD implements Registrable {
     public static void registrarModelo(Class<? extends ModeloBD> c){
         modelos.put(c.getSimpleName(), c);
     }
+    public static Object[] extraerPrimarias(ModeloBD modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Integer[] pris = ModeloBD.obtenerPrimariasDe(modelo.getClass().getSimpleName());
+        Object[] datos = modelo.obtenerDatos();
+
+        Object[] o = new Object[pris.length];
+        for (int i = 0; i < pris.length; i++) {
+            int idx = pris[i];
+            Object dato = datos[idx];
+            o[i] = dato;
+        }
+        return o;
+    }
     public static Class<? extends ModeloBD> getModelo(String n){
         return modelos.get(n);
     }
@@ -94,7 +106,6 @@ public class ModeloBD implements Registrable {
         return (Integer[]) invocar(modelo, "obtenerForaneas");
     }
     public static ModeloBD instanciar(String nombre, Object[] args){
-        System.out.println(modelos);
         Class<? extends ModeloBD> modlemombo = getModelo(nombre);
         Constructor<? extends ModeloBD> c = (Constructor<? extends ModeloBD>) modlemombo.getDeclaredConstructors()[0];
 

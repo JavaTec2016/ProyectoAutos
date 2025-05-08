@@ -13,10 +13,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Objects;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -189,7 +189,7 @@ public class FormHook {
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
-                //System.out.println(s + " APENDACION " + campoHook.componente);
+
                 //asignar un panel con flow o box layout al campo, luego ponele label e input
                 try{
                     CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
@@ -215,7 +215,7 @@ public class FormHook {
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
-                //System.out.println(s + " APENDACION " + campoHook.componente);
+
                 //asignar un panel con flow o box layout al campo, luego ponele label e input
                 try{
                     CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(s), exps.get(s)));
@@ -253,6 +253,53 @@ public class FormHook {
         });
         return datos;
     }
+
+    /**
+     * Rellena el formulario con los datos de un modelo, el modelo debe contener los mismos campos que el formulario
+     * @param modelo modelo a mostrar
+     * @throws IllegalAccessException si los campos del modelo son inaccesibles
+     */
+    public void colocar(ModeloBD modelo) throws IllegalAccessException {
+        Object[] datos = modelo.obtenerDatos();
+        String[] noms = ModeloBD.obtenerCamposNombresDe(modelo.getClass().getSimpleName());
+
+        for (int i = 0; i < noms.length; i++) {
+            String nom = noms[i];
+            Object dato = datos[i];
+
+            JComponent c = campos.get(nom).getChild("input").componente;
+            colocarDato(c, dato);
+        }
+    }
+
+    /**
+     * Coloca un dato en un componente
+     * @param comp componente a llenar
+     * @param dato dato a mostrar
+     */
+    public static void colocarDato(JComponent comp, Object dato){
+        if(comp instanceof JTextField){
+            ((JTextField) comp).setText(dato.toString());
+        }
+        else if(comp instanceof JComboBox<?>){
+            ((JComboBox<?>) comp).setSelectedIndex((Integer) dato);
+        }
+        else if(comp instanceof JCheckBox){
+            ((JCheckBox) comp).setSelected((Boolean) dato);
+        }
+        else if(comp instanceof JDatePicker){
+            Calendar.getInstance().setTime((java.sql.Date) dato);
+            Calendar c = Calendar.getInstance();
+            ((JDatePicker) comp).getModel().setDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+        }
+    }
+
+    /**
+     * Convierte un dato a su respectivo tipo
+     * @param dato dato en formato textual
+     * @param tipo tipo de dato para convertir
+     * @return dato convertido
+     */
     public Object convertir(String dato, Class<?> tipo){
         if(dato == null) return null;
         switch (tipo.getSimpleName()){
@@ -261,6 +308,14 @@ public class FormHook {
             case "Float": return Float.parseFloat(dato);
             case "Double": return Double.parseDouble(dato);
             case "Boolean": return Boolean.parseBoolean(dato);
+            case "Date":
+                try {
+                    return DateFormat.getInstance().parse(dato);
+                } catch (ParseException e) {
+                    System.out.println("ERROR AL DATEAR: ");
+                    e.printStackTrace();
+                    return null;
+                }
             default:
                 System.out.println("Tipo de dato desconocido: " + tipo.getSimpleName());
         }
@@ -286,6 +341,11 @@ public class FormHook {
 
             case "checkbox":
                 return ((JCheckBox)campo).isSelected();
+
+            case "datepicker":
+                var k = ((JDatePicker)campo).getModel().getValue();
+                System.out.println(k);
+                return k;
 
             default: return null;
         }
@@ -324,7 +384,7 @@ public class FormHook {
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
-                //System.out.println(s + " Attachin " + campoHook);
+
                 comp.appendChild(s, campoHook);
             }
         });
@@ -339,7 +399,7 @@ public class FormHook {
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String s, CampoHook campoHook) {
-                //System.out.println(s + " Attachin " + campoHook);
+
                 comp.appendChild(s, campoHook, constraints);
             }
         });
@@ -472,7 +532,7 @@ public class FormHook {
                 if(patron.matcher(testear).matches()){
                     super.keyTyped(e);
                 }else {
-                    System.out.println("incorrec: "+ testear + "  " + regex);
+
                     e.consume();
                 }
             }
@@ -489,6 +549,12 @@ public class FormHook {
         });
         return txt;
     }
+
+    /**
+     * Crea un campo de contraseña y lo configura para impedir caracteres según una expresión regular
+     * @param regex expresión para filtrar caracteres
+     * @return campo configurado
+     */
     static JComponent makeRestrictedPassField(String regex){
 
         JPasswordField txt = new JPasswordField();
@@ -501,7 +567,7 @@ public class FormHook {
                 if(patron.matcher(testear).matches()){
                     super.keyTyped(e);
                 }else {
-                    System.out.println("incorrec: "+ testear + "  " + regex);
+
                     e.consume();
                 }
             }
@@ -583,8 +649,21 @@ public class FormHook {
         PanelHook p = new PanelHook(new GridBagLayout());
         return p;
     }
+
+    /**
+     * Crea un registro con GridbagLayout
+     * @return registro con layout
+     */
+    public static Registro makeGridBagRegistro(){
+        return new Registro(new GridBagLayout());
+    }
+
+    /**
+     * Agrega una nueva seccion al formulario
+     * @param Id id de la seccion
+     * @param p seccion a agregar
+     */
     public void agregarSeccion(String Id, PanelHook p){
-        //System.out.println("Nueva seccion: " + Id + p.getComponente());
         secciones.put(Id, p);
     }
     public static PanelHook crearRegistro(String[] info){
@@ -594,6 +673,17 @@ public class FormHook {
         p.addElement("btnEliminar", new JButton("Eliminar"));
         return p;
     }
+
+    /**
+     * Crea un nuevo panel con gridbag layout con informacion dada del registro, incluye botones de eliminar y editar
+     * @param Id id del registro
+     * @param datos informacion a mostrar en el registro,
+     * @param nombreDatos id de cada campo que muestra uno de los datos dados
+     * @param distribucion cuantas celdas se le asignan a cada registro
+     * @param celdas numero total de celdas en el registro
+     * @param tamanio tamaño vertical del registro
+     * @return panel configurado con información
+     */
     public static PanelHook crearRegistroGridBag(String Id, CampoHook[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio){
         PanelHook p = makeGridBagPanel();
         p.setPreferredSize(new Dimension(0, tamanio));
@@ -639,6 +729,85 @@ public class FormHook {
         p.addElementConstraint("btnEliminar", new JButton("Eliminar"), c);
         return p;
     }
+    /**
+     * Crea un nuevo registro con informacion dada del registro, incluye botones de eliminar y editar, así como
+     * acción de clic configurable y un indicador visual de su selección. No incluye modelo asociado
+     * @param Id id del registro
+     * @param datos informacion a mostrar en el registro,
+     * @param nombreDatos id de cada campo que muestra uno de los datos dados
+     * @param distribucion cuantas celdas se le asignan a cada registro
+     * @param celdas numero total de celdas en el registro
+     * @param tamanio tamaño vertical del registro
+     * @return Registro configurado
+     */
+    public static Registro crearRegistroGridBagR(String Id, CampoHook[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio){
+        Registro p = makeGridBagRegistro();
+        p.setPreferredSize(new Dimension(0, tamanio));
+        p.setMaximumSize(new Dimension(32767, tamanio));
+        int celdasTotal = celdas+2;//incluir botones
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        double freeWeight = 1;
+        for (int i = 0; i < datos.length; i++) {
+            //datos[i].getComponente().setPreferredSize(new Dimension(0, tamanio));
+            int ocupa = distribucion[i];
+            //convertir las celdas que ocupa el elemento a peso del gridbag
+            double weight = (double) ocupa /celdasTotal;
+            freeWeight -= weight;
+            c.weightx = weight;
+            p.addElementConstraint(nombreDatos[i], datos[i], c);
+
+        }
+        p.componente.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if(p.clicAccion != null) p.clicAccion.run(e);
+            }
+            //logica de cambio de color
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                if(p.colorSinEnfoque.equals(p.colorOriginal)){
+                    p.setBackground(p.colorEnfocado);
+                }else {
+                    p.setBackground(p.colorSeleccion);
+                }
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                if(p.colorSinEnfoque.equals(p.colorOriginal)){
+                    p.setBackground(p.colorSinEnfoque);
+                }else p.setBackground(p.colorSeleccion);
+            }
+        });
+        //queda solo el weight restante pa los 2 botones
+        c.weightx = freeWeight/2;
+        c.fill = GridBagConstraints.NONE;
+        //p.addElement("Prueba", new JLabel("Buenas"));
+        JButton btnEditar = new JButton("Editar");
+        JButton btnEliminar = new JButton("Eliminar");
+        p.addElementConstraint("btnEditar", btnEditar, c);
+        p.addElementConstraint("btnEliminar", btnEliminar, c);
+
+        p.btnEliminar = btnEliminar;
+        p.btnEditar = btnEditar;
+        return p;
+    }
+    /**
+     * Crea un nuevo panel con gridbag layout con los componentes dados, incluye botones de eliminar y editar
+     * @param Id id del registro
+     * @param datos componentes a mostrar en el registro,
+     * @param nombreDatos id de cada campo que muestra uno de los datos dados
+     * @param distribucion cuantas celdas se le asignan a cada registro
+     * @param celdas numero total de celdas en el registro
+     * @param tamanio tamaño vertical del registro
+     * @return panel configurado con información
+     */
     public static PanelHook crearRegistroGridBag(String Id, JComponent[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio){
         CampoHook[] cs = new CampoHook[datos.length];
         for (int i = 0; i < datos.length; i++) {
@@ -646,45 +815,67 @@ public class FormHook {
         }
         return crearRegistroGridBag(Id, cs, nombreDatos, distribucion, celdas, tamanio);
     }
+
+    /**
+     * Crea un nuevo registro con los componentes dados, incluye un modelo asociado, botones de eliminar y editar, así como
+     * acción de clic configurable y un indicador visual de su selección.
+     * @param datos componentes a mostrar en el registro,
+     * @param nombreDatos id de cada campo que muestra uno de los datos dados
+     * @param distribucion cuantas celdas se le asignan a cada registro
+     * @param celdas numero total de celdas en el registro
+     * @param tamanio tamaño vertical del registro
+     * @param asociado modelo a asociar al registro
+     * @return Registro configurado
+     */
     public static Registro crearRegistroGridBag(JComponent[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio, ModeloBD asociado){
         CampoHook[] cs = new CampoHook[datos.length];
         for (int i = 0; i < datos.length; i++) {
             cs[i] = new CampoHook(datos[i]);
         }
-        PanelHook reg = crearRegistroGridBag("registro", cs, nombreDatos, distribucion, celdas, tamanio);
-        return new Registro(reg, asociado);
+        Registro reg = crearRegistroGridBagR("registro", cs, nombreDatos, distribucion, celdas, tamanio);
+        reg.asociado = asociado;
+        return reg;
     }
+
+    /**
+     * Crea un panel vertical para enlistar registros
+     * @return panel vertical
+     */
     public static ScrollHook crearScroll() {
         PanelHook p = makeVerticalListPanel();
         return new ScrollHook(p);
     }
+    /**
+     * Crea un panel vertical con filas específicas para enlistar registros
+     * @return panel vertical
+     */
     public static ScrollHook crearScroll(int rows) {
         PanelHook p = makeVerticalListPanel(rows);
         return new ScrollHook(p);
     }
-    public static ScrollHook crearScroll(int x, int y, int w, int h){
-        ScrollHook s = crearScroll();
-        s.setBounds(x,y,w,h);
-        s.getView().setBounds(x,y,w,h);
-        return s;
-    }
+    /**
+     * Crea un panel vertical con dimenisones y filas específicas para enlistar registros
+     * @return panel vertical
+     */
     public static ScrollHook crearScroll(int x, int y, int w, int h, int rowsVisible){
         ScrollHook s = crearScroll(rowsVisible);
         s.setBounds(x,y,w,h);
         //s.getView().setBounds(x,y,w,h);
         return s;
     }
-    public static ScrollHook crearScroll(int w, int h){
-        ScrollHook s = crearScroll();
-        s.getComponente().setSize(w, h);
-        s.getView().getComponente().setSize(w, h);
-        return s;
-    }
+    /**
+     * Crea un GridbagConstraint para componentes verticales
+     * @return constraint
+     */
     public static GridBagConstraints makeVerticalConstraint(int gridx){
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = gridx;
         return gc;
     }
+    /**
+     * Crea un GridbagConstraint con posicion de grid y forma de llenado
+     * @return constraint
+     */
     public static GridBagConstraints makeConstraint(int gridx, int gridy, int fill){
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = gridx;
@@ -692,6 +883,10 @@ public class FormHook {
         gc.fill = fill;
         return gc;
     }
+    /**
+     * Crea un GridbagConstraint con posicion de grid, peso horizontal y vertical y forma de llenado
+     * @return constraint
+     */
     public static GridBagConstraints makeConstraint(int gridx, int gridy,float weightx, float weighty, int fill){
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = gridx;
@@ -701,22 +896,27 @@ public class FormHook {
         gc.fill = fill;
         return gc;
     }
+    /**
+     * Agrega los campos del formulario con un GridbagLayout, especificando si es vertical o no
+     */
     public void attachCamposGridbag(int vertical){
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = 1-vertical;
         attachEnSeccion("campos", gc);
     }
-    public JComponent getCampoComp(String nombre){
-        return campos.get(nombre).componente;
-    }
+    /**
+     * Crea un panel con la imagen especificada de la carpeta de assets
+     * @return panel con imagen
+     */
     public static ImageHook crearImagen(String nombre){
 
         ImageHook i = new ImageHook("/assets/usr.png");
         return i;
     }
-    public static void crearImagenLabel(String nombre){
-
-    }
+    /**
+     * Crea un panel lateral con información de usuario y botones de accion
+     * @return panel de usuario
+     */
     public static PanelHook makeUserPanel(String usr){
         PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102))
                 .setPreferredSize(new Dimension(200, 0));
@@ -759,6 +959,10 @@ public class FormHook {
 
         return sidebar;
     }
+    /**
+     * Crea una interfaz de formulario para el modelo especificado
+     * @return Interfaz de formulario
+     */
     public static PanelHook crearFormulario(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         FormHook f = new FormHook(
                 ModeloBD.obtenerCampoNombresDe(ModeloBD.getModelo(modelo)),
@@ -823,6 +1027,14 @@ public class FormHook {
         holder.form = f;
         return holder;
     }
+
+    /**
+     * Crea un boton para formulario con los datos especificados
+     * @param txt texto del boton
+     * @param bkg color de fondo
+     * @param frg color del texto
+     * @return boton personalizado
+     */
     public static CampoHook makeFormBoton(String txt, Color bkg, Color frg){
         CampoHook c = new CampoHook(new JButton(txt));
         c.setBackground(bkg);
@@ -830,6 +1042,12 @@ public class FormHook {
         c.componente.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
         return c;
     }
+
+    /**
+     * Crea una pantalla de login
+     * @param d dimensiones de la pantalla
+     * @return pantalla personalizada
+     */
     public static Login crearLogin(Dimension d){
         FormHook f = new FormHook(
                 Usuario.obtenerCamposNombres(),
@@ -910,8 +1128,6 @@ public class FormHook {
         //organizar paneles mas bonito
 
         PanelHook panelCentral = FormHook.makeVerticalListPanel(0);
-
-        System.out.println(panelCentral.componente.getSize());
         f.attachSeccionesEn(panelCentral);
 
         Login panelLogin = new Login();//FormHook.makeGridBagPanel();
@@ -946,6 +1162,15 @@ public class FormHook {
         return panelLogin;
     }
 
+    /**
+     * Crea una pantalla ABCC a partir de la tabla proporcionada, incluyendo tabla para visualizar registros
+     * @param modelo modelo para crear la pantalla
+     * @param mds registros a plasmar en la tabla
+     * @return pantalla personalizada
+     * @throws InvocationTargetException si ocurrió un error al obtener los datos del modelo durante la creación del formulario
+     * @throws NoSuchMethodException Si durante la creación del formulario no se encuentra un método para obtener datos del modelo
+     * @throws IllegalAccessException Si los datos del modelo son inaccesibles al crear el formulario
+     */
     public static PanelHook crearABCC(String modelo, ArrayList<ModeloBD> mds) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         PanelHook holder = FormHook.makeGridBagPanel().setBackground(Color.white);
@@ -989,6 +1214,12 @@ public class FormHook {
 
         return holder;
     }
+
+    /**
+     * Extrae los registros de la tabla especificada
+     * @param tabla tabla a procesar
+     * @return lista de los registros cargados en la tabla
+     */
     public static ArrayList<Registro> obtenerRegistros(ScrollHook tabla){
         ArrayList<Registro> regs = new ArrayList<>();
         tabla.getView().children.forEach(new BiConsumer<String, CampoHook>() {
@@ -999,6 +1230,16 @@ public class FormHook {
         });
         return regs;
     }
+
+    /**
+     * Crea un boton con el estilo del panel lateral de usuario
+     * @param txt texto del botón
+     * @param bkg color de fondo del botón
+     * @param dtl color de la línea de color del botón
+     * @param txc color del texto del boton
+     * @param adp MouseAdapter para las acciones del botón
+     * @return botón configurado
+     */
     public static PanelHook makeSidebarBoton(String txt, Color bkg, Color dtl, Color txc, MouseAdapter adp){
         PanelHook panelBtn = FormHook.makeGridBagPanel().setBackground(bkg);
         PanelHook panelDtl = new PanelHook().setBackground(dtl);
@@ -1012,6 +1253,14 @@ public class FormHook {
         panelBtn.componente.addMouseListener(adp);
         return panelBtn;
     }
+    /**
+     * Crea un boton con el estilo del panel lateral de usuario
+     * @param txt texto del botón
+     * @param bkg color de fondo del botón
+     * @param dtl color de la línea de color del botón
+     * @param txc color del texto del boton
+     * @return botón configurado
+     */
     public static PanelHook makeSidebarBoton(String txt, Color bkg, Color dtl, Color txc){
         PanelHook panelBtn = FormHook.makeGridBagPanel().setBackground(bkg);
         PanelHook panelDtl = new PanelHook().setBackground(dtl);
@@ -1025,9 +1274,20 @@ public class FormHook {
 
         return panelBtn;
     }
+
+    /**
+     * Elimina todos los registros de la tabla dada
+     * @param tabla tabla a limpiar
+     */
     public static void limpiarTabla(ScrollHook tabla){
         tabla.getView().removeChildren();
     }
+
+    /**
+     * Rellena la tabla dada con la lista de modelos especificada
+     * @param tabla tabla a rellenar
+     * @param mds lista de modelos a mostrar
+     */
     public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> mds){
         if(mds != null){
             final int[] i = {0};
@@ -1055,7 +1315,7 @@ public class FormHook {
         tabla.getComponente().revalidate();
     }
     /**
-     * elimina los campos cuyos nombres no coincidan con los nombres dados
+     * Elimina los campos cuyos nombres no coincidan con los nombres dados
      * @param nom lista de nombres que permanecen
      */
     public void whiteList(String ...nom){
@@ -1081,6 +1341,12 @@ public class FormHook {
         }
 
     }
+
+    /**
+     * Establece las dimensiones de los campos especificados
+     * @param campoNombres nombre de cada campo a redimensionar
+     * @param sizes nueva dimension del campo
+     */
     public void setCamposSizes(String[] campoNombres, Dimension[] sizes){
         for (int i = 0; i < campoNombres.length; i++) {
             Dimension d = sizes[i];

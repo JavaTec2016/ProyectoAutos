@@ -1,5 +1,6 @@
 package Vista;
 
+import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
 import ErrorHandlin.Validador;
 import FormTools.FormHook;
@@ -36,7 +37,7 @@ public class Ventana extends JFrame {
     ArrayList<String> filtroNombres = null;
     ArrayList<Object> filtroValores = null;
     ModeloBD registroActual = null;
-
+    Registro registroSeleccionado = null;
     public Ventana(){
         setSize(500, 500);
 
@@ -229,6 +230,7 @@ public class Ventana extends JFrame {
     public void agregar(ModeloBD modelo){
         try {
             DAO.d.agregar(modelo);
+            JOptionPane.showMessageDialog(null, "Registro agregado", "Insercion", JOptionPane.INFORMATION_MESSAGE);
         } catch (IllegalAccessException e) {
             System.out.println("Error al recuperar los datos del modelo");
             throw new RuntimeException(e);
@@ -240,6 +242,7 @@ public class Ventana extends JFrame {
     public void modificar(ModeloBD modelo, Object[] primariasOG){
         try {
             DAO.d.modificar(modelo, primariasOG);
+            JOptionPane.showMessageDialog(null, "Registro modificado", "Modificacion", JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             System.out.println("Error de modificacion: " +e.getErrorCode());
             e.printStackTrace();
@@ -319,6 +322,14 @@ public class Ventana extends JFrame {
             }
         });
     }
+
+    /**
+     * Crea una interfaz ABCC a partir de la tabla proporcionada y configura sus acciones
+     * @param tabla nombre de la tabla para crear la interfaz
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     * @throws IllegalAccessException
+     */
     public void configurarABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         ArrayList<ModeloBD> ar = realizarConsulta(tabla, null, null, null);
@@ -349,7 +360,22 @@ public class Ventana extends JFrame {
                 }else{
                     Object[] args = datos.toArray();
                     ModeloBD m = ModeloBD.instanciar(tabla, args);
-                    agregar(m);
+                    if(registroSeleccionado == null){
+                        agregar(m);
+                    }else{
+                        try {
+                            modificar(m, ModeloBD.extraerPrimarias(m));
+
+                            cambiarSeleccion(null);
+                        } catch (InvocationTargetException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (NoSuchMethodException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IllegalAccessException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+
                     ScrollHook sc = (ScrollHook) ventanaPrincipal.getChild("main").getChild("tableHolder").getChild("tabla");
                     actualizarTablaABCCThread(sc, tabla, (String[]) null, null, null);
                 }
@@ -369,6 +395,39 @@ public class Ventana extends JFrame {
     }
 
     /**
+     * Restaura el registro anteriormente seleccionado (si existe) y guarda el nuevo registro, actualizando su color
+     * y comportamiento de clic. Si el nuevo registro es nulo, estas configuraciones se saltan
+     * @param r registro a seleccionar
+     */
+    public void cambiarSeleccion(Registro r){
+        if(registroSeleccionado != null){
+            registroSeleccionado.setColorsNormal();
+            System.out.println("DESELECCIONADO");
+            registroSeleccionado.setClicAccion(new Call() {
+                @Override
+                public void run(Object... data) {
+                    return;
+                }
+            });
+        }
+        registroSeleccionado = r;
+
+        if(r != null){
+            r.setColorsSeleccion();
+            registroActual = r.asociado;
+
+            r.setClicAccion(new Call() {
+                @Override
+                public void run(Object... data) {
+                    cambiarSeleccion(null);
+                }
+            });
+
+        }else registroActual = null;
+
+    }
+
+    /**
      * Configura los botones de eliminar y editar de todos los registros de la tabla dada
      * @param tabla tabla cuyos registros se desean configurar
      */
@@ -378,15 +437,28 @@ public class Ventana extends JFrame {
         for (Registro reg : regs) {
 
             reg.configurarEliminar(e -> {
-                registroActual = reg.asociado;
+                cambiarSeleccion(reg);
 
                 int eleccion = optionPaneEliminar();
                 if(eleccion != 0) return;
 
                 eliminar(registroActual);
                 actualizarTablaABCCThread(tabla, tablaActual, selecNombres, filtroNombres, filtroValores);
+                cambiarSeleccion(null);
             });
 
+            reg.configurarEditar(e -> {
+                cambiarSeleccion(reg);
+                //rellenar el formulario con los datos
+                FormHook f = ventanaPrincipal.getChild("sidebar").form;
+
+                try {
+                    f.colocar(registroActual);
+                } catch (IllegalAccessException ex) {
+                    System.out.println("No se pudo acceder a los campos del registro");
+                    cambiarSeleccion(null);
+                }
+            });
         }
     }
 
@@ -475,10 +547,6 @@ public class Ventana extends JFrame {
                         try {
 
                             ConexionBD.getConector().ejecutarScriptInicial();
-                            //agregar(new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si"));
-                            //modificar(new Cliente(2, "Ernest", "Jui", "4941002031", "Jerekistan", "Chida", "88Bis", "Ernest@mail.si"), new Object[]{0});
-                            //System.out.println(realizarConsulta("Cliente", null, null, null));
-
                             v.cambiarALogin();
 
                         } catch (IOException e) {
@@ -499,7 +567,7 @@ public class Ventana extends JFrame {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Install.ejecutar();
+        //Install.ejecutar();
         for (String s : Install.salida) {
             System.out.println(s);
         }
