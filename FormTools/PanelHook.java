@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class PanelHook extends CampoHook {
 
-    private LayoutManager layout;
+    protected LayoutManager layout;
 
     public PanelHook(){
         this(null);

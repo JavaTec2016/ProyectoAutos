@@ -2,6 +2,8 @@ package FormTools;
 
 import Modelo.ModeloBD;
 import Modelo.Usuario;
+import Vista.Login;
+import Vista.Registro;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
@@ -644,14 +646,13 @@ public class FormHook {
         }
         return crearRegistroGridBag(Id, cs, nombreDatos, distribucion, celdas, tamanio);
     }
-    public static PanelHook crearRegistroGridBag(JComponent[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio, ModeloBD asociado){
+    public static Registro crearRegistroGridBag(JComponent[] datos, String[] nombreDatos, int[] distribucion, int celdas, int tamanio, ModeloBD asociado){
         CampoHook[] cs = new CampoHook[datos.length];
         for (int i = 0; i < datos.length; i++) {
             cs[i] = new CampoHook(datos[i]);
         }
         PanelHook reg = crearRegistroGridBag("registro", cs, nombreDatos, distribucion, celdas, tamanio);
-        reg.asociados.put("modelo", asociado);
-        return reg;
+        return new Registro(reg, asociado);
     }
     public static ScrollHook crearScroll() {
         PanelHook p = makeVerticalListPanel();
@@ -829,7 +830,7 @@ public class FormHook {
         c.componente.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
         return c;
     }
-    public static PanelHook crearLogin(Dimension d){
+    public static Login crearLogin(Dimension d){
         FormHook f = new FormHook(
                 Usuario.obtenerCamposNombres(),
                 Usuario.obtenerLabels(),
@@ -913,7 +914,7 @@ public class FormHook {
         System.out.println(panelCentral.componente.getSize());
         f.attachSeccionesEn(panelCentral);
 
-        PanelHook panelLogin = FormHook.makeGridBagPanel();
+        Login panelLogin = new Login();//FormHook.makeGridBagPanel();
         panelLogin.id = "id";
 
         panelLogin.appendChild("izquierda", new PanelHook()
@@ -944,6 +945,7 @@ public class FormHook {
         panelLogin.form = f;
         return panelLogin;
     }
+
     public static PanelHook crearABCC(String modelo, ArrayList<ModeloBD> mds) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         PanelHook holder = FormHook.makeGridBagPanel().setBackground(Color.white);
@@ -987,12 +989,12 @@ public class FormHook {
 
         return holder;
     }
-    public static ArrayList<PanelHook> obtenerRegistros(ScrollHook tabla){
-        ArrayList<PanelHook> regs = new ArrayList<>();
+    public static ArrayList<Registro> obtenerRegistros(ScrollHook tabla){
+        ArrayList<Registro> regs = new ArrayList<>();
         tabla.getView().children.forEach(new BiConsumer<String, CampoHook>() {
             @Override
             public void accept(String id, CampoHook registro) {
-                regs.add((PanelHook)registro);
+                regs.add((Registro)registro);
             }
         });
         return regs;

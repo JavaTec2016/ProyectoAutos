@@ -5,6 +5,7 @@ import ErrorHandlin.Validador;
 import FormTools.FormHook;
 import FormTools.ScrollHook;
 import FormTools.PanelHook;
+import Instalador.Install;
 import Modelo.Cliente;
 import Modelo.ModeloBD;
 import Modelo.Registrable;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class Ventana extends JFrame {
     PanelHook ventanaPrincipal;
-    PanelHook ventanaLogin;
+    Login ventanaLogin;
     CardLayout layout = null;
 
     String tablaActual = null;
@@ -113,7 +114,13 @@ public class Ventana extends JFrame {
     public void handlearError(int codigo, Object... args){
         ErrorHandler.ejecutarHandler(codigo, args);
     }
-    //registra todos los handlers para manejar errores
+
+    /**
+     * Registra funciones para manejar distintos errores
+     * todo:
+     * separar la funcion en varias, segun los parametros que reciban los handlers
+     * @param v Ventana en la cual se muestran mensajes de error
+     */
     public static void registrarHandlers(Ventana v){
 
         ///VALIDACION POSTERIOR
@@ -179,6 +186,14 @@ public class Ventana extends JFrame {
             JOptionPane.showMessageDialog(v, "Ocurrió un error al obtener datos de un registro", "Error de consulta", JOptionPane.ERROR_MESSAGE);
         });
     }
+
+    /**
+     * Realiza una conexión a una BD con los parámetros dados
+     * @param usuario usuario con el cual conectarse
+     * @param pass contraseña del usuario
+     * @param bd nombre de la BD
+     * @return código de error, o 0 si fue exitosa
+     */
     public int conectar(String usuario, String pass, String bd){
         try {
             ConexionBD.getConector().abrirConexion(usuario, pass, bd);
@@ -191,11 +206,21 @@ public class Ventana extends JFrame {
         }
         return 0;
     }
-    public static ArrayList<ModeloBD> realizarConsulta(String t, String[] sn, String[] fn, Object[] fv) {
+
+    /**
+     * Realiza una consulta a la BD
+     * @param tabla nombre de la tabla a consultar en la BD
+     * @param selecNombres datos a consultar en la tabla de la BD
+     * @param filtroNombres campos a filtrar en la consulta a la BD
+     * @param filtroValores valores a filtrar en la consulta a la BD
+
+     */
+    public ArrayList<ModeloBD> realizarConsulta(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) {
 
         try {
-            return DAO.d.obtenerRegistros(t, sn, fn, fv);
+            return DAO.d.obtenerRegistros(tabla, selecNombres, filtroNombres, filtroValores);
         } catch (SQLException e) {
+            handlearError(e.getErrorCode(), tabla);
             System.out.println("Error de consulta: " + e.getErrorCode());
             e.printStackTrace();
         }
@@ -231,35 +256,34 @@ public class Ventana extends JFrame {
         add(p.componente, id);
         return p;
     }
+    public void configurarLogin(){
+        ventanaLogin.accionLogear(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ArrayList<Object> l = ventanaLogin.form.extraer();
+                int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
+                        conectar("SANTIAGO", "santiago", "Autos");
+                if(cod!=0) return;
+                try {
+                    configurarABCC("Cliente");
+                } catch (InvocationTargetException ex) {
+                    throw new RuntimeException(ex);
+                } catch (NoSuchMethodException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
+                }
+                layout.show(getContentPane(),"principal");
+            }
+        });
+    }
     public void cambiarALogin(){
         if(ventanaLogin == null){
             ventanaLogin = FormHook.crearLogin(getSize());
+            configurarLogin();
             add(ventanaLogin.componente, "login");
 
-            ventanaLogin.form.getBoton("btnLogear").componente.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    ArrayList<Object> l = ventanaLogin.form.extraer();
-                    int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
-                            conectar("SANTIAGO", "santiago", "Autos");
-                    if(cod!=0) return;
 
-                    try {
-                        configurarABCC("Cliente");
-                    } catch (InvocationTargetException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (NoSuchMethodException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IllegalAccessException ex) {
-                        throw new RuntimeException(ex);
-                    }
-
-                    layout.show(getContentPane(),"principal");
-                    System.out.println(getContentPane().getSize());
-                    System.out.println(ventanaPrincipal.componente.getSize());
-
-                }
-            });
         }
         layout.show(getContentPane(), "login");
         revalidate();
@@ -296,11 +320,12 @@ public class Ventana extends JFrame {
         });
     }
     public void configurarABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+
         ArrayList<ModeloBD> ar = realizarConsulta(tabla, null, null, null);
         ventanaPrincipal = actualizarVentana("principal", FormHook.crearABCC(tabla, ar));
         PanelHook formulario = (PanelHook) ventanaPrincipal.getChild("sidebar");
 
-        actualizarTablaABCC((ScrollHook)ventanaPrincipal.childPath("main/tableHolder/tabla"), tabla, (String[]) null, null, null);
+        actualizarTablaABCCThread((ScrollHook)ventanaPrincipal.childPath("main/tableHolder/tabla"), tabla, (String[]) null, null, null);
         ((JButton)formulario.getChild("foot").getChild("btnAgregar").componente).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -326,40 +351,71 @@ public class Ventana extends JFrame {
                     ModeloBD m = ModeloBD.instanciar(tabla, args);
                     agregar(m);
                     ScrollHook sc = (ScrollHook) ventanaPrincipal.getChild("main").getChild("tableHolder").getChild("tabla");
-                    actualizarTablaABCC(sc, tabla, (String[]) null, null, null);
+                    actualizarTablaABCCThread(sc, tabla, (String[]) null, null, null);
                 }
             }
         });
         tablaActual = tabla;
 
     }
+
+    /**
+     * Crea un panel de confirmacion para eliminar registros
+     * @return eleccion del panel
+     */
+    public int optionPaneEliminar(){
+        return JOptionPane.showOptionDialog(this,  "Confirme la elminacion del registro", "Confirmar eliminacion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                new Object[]{"Continuar", "Cancelar"}, "Continuar");
+    }
+
+    /**
+     * Configura los botones de eliminar y editar de todos los registros de la tabla dada
+     * @param tabla tabla cuyos registros se desean configurar
+     */
     public void configurarBotonesRegistros(ScrollHook tabla){
-        Ventana v = this;
-        ArrayList<PanelHook> regs = FormHook.obtenerRegistros(tabla);
-        for (PanelHook reg : regs) {
-            ((JButton)reg.getChild("btnEliminar").componente).addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    registroActual = (ModeloBD) reg.asociados.get("modelo");
+        ArrayList<Registro> regs = FormHook.obtenerRegistros(tabla);
 
-                    int eleccion = JOptionPane.showOptionDialog(v,  "Confirme la elminacion del registro", "Confirmar eliminacion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
-                            new Object[]{"Continuar", "Cancelar"}, "Continuar");
+        for (Registro reg : regs) {
 
-                    if(eleccion == 0){
-                        System.out.println("ELIMINAR WIP: " + reg.asociados.toString());
-                        eliminar(registroActual);
-                        actualizarTablaABCC(tabla, tablaActual, selecNombres, filtroNombres, filtroValores);
-                    }else return;
-                }
+            reg.configurarEliminar(e -> {
+                registroActual = reg.asociado;
+
+                int eleccion = optionPaneEliminar();
+                if(eleccion != 0) return;
+
+                eliminar(registroActual);
+                actualizarTablaABCCThread(tabla, tablaActual, selecNombres, filtroNombres, filtroValores);
             });
+
         }
     }
+
+    /**
+     * Actualiza los registros de una tabla a traves de una consulta a la BD
+     * @param s tabla a actualizar
+     * @param tabla nombre de la tabla a consultar en la BD
+     * @param selecNombres datos a consultar en la tabla de la BD
+     * @param filtroNombres campos a filtrar en la consulta a la BD
+     * @param filtroValores valores a filtrar en la consulta a la BD
+     */
     public void actualizarTablaABCC(ScrollHook s, String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores){
         ArrayList<ModeloBD> m = realizarConsulta(tabla, selecNombres, filtroNombres, filtroValores);
         if(m == null) return;
         FormHook.limpiarTabla(s);
         FormHook.rellenarTabla(s, m);
         configurarBotonesRegistros(s);
+    }
+    public void actualizarTablaABCCThread(ScrollHook s, String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<ModeloBD> m = realizarConsulta(tabla, selecNombres, filtroNombres, filtroValores);
+                if(m == null) return;
+                FormHook.limpiarTabla(s);
+                FormHook.rellenarTabla(s, m);
+                configurarBotonesRegistros(s);
+            }
+        }).start();
     }
     public void actualizarTablaABCC(ScrollHook s, String tabla, ArrayList<String> selecNombres, ArrayList<String> filtroNombres, ArrayList<Object> filtroValores){
         String[] sn = null;
@@ -374,6 +430,28 @@ public class Ventana extends JFrame {
         FormHook.limpiarTabla(s);
         FormHook.rellenarTabla(s, m);
         configurarBotonesRegistros(s);
+    }
+    public void actualizarTablaABCCThread(ScrollHook s, String tabla, ArrayList<String> selecNombres, ArrayList<String> filtroNombres, ArrayList<Object> filtroValores){
+        String[] sn = null;
+        String[] fn = null;
+        Object[] fv = null;
+        if(selecNombres!=null)sn = selecNombres.toArray(new String[0]);
+        if(filtroNombres!=null)fn = filtroNombres.toArray(new String[0]);
+        if(filtroValores!=null)fv = filtroValores.toArray();
+
+        String[] finalSn = sn;
+        String[] finalFn = fn;
+        Object[] finalFv = fv;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<ModeloBD> m = realizarConsulta(tabla, finalSn, finalFn, finalFv);
+                if(m == null) return;
+                FormHook.limpiarTabla(s);
+                FormHook.rellenarTabla(s, m);
+                configurarBotonesRegistros(s);
+            }
+        }).start();
     }
     public static void main0(String[] args) {
         ModeloBD.registrarModelo(Cliente.class);
@@ -399,7 +477,7 @@ public class Ventana extends JFrame {
                             ConexionBD.getConector().ejecutarScriptInicial();
                             //agregar(new Cliente(0, "Jua", "Jui", "4941002030", "Jerekistan", "Chida", "88Bis", "Jua@mail.si"));
                             //modificar(new Cliente(2, "Ernest", "Jui", "4941002031", "Jerekistan", "Chida", "88Bis", "Ernest@mail.si"), new Object[]{0});
-                            System.out.println(realizarConsulta("Cliente", null, null, null));
+                            //System.out.println(realizarConsulta("Cliente", null, null, null));
 
                             v.cambiarALogin();
 
@@ -420,8 +498,11 @@ public class Ventana extends JFrame {
         });
     }
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Install.ejecutar();
+        for (String s : Install.salida) {
+            System.out.println(s);
+        }
         ModeloBD.registrarModelo(Cliente.class);
         ModeloBD.registrarModelo(Usuario.class);
         SwingUtilities.invokeLater(new Runnable() {
