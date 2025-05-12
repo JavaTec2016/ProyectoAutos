@@ -35,4 +35,7 @@ public class Lector {
             consumer.accept(line);
         }
     }
+    public static void cargarStreamReader(InputStreamReader r){
+        reader = new BufferedReader(r);
+    }
 }

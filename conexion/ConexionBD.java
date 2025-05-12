@@ -1,6 +1,7 @@
 package conexion;
 
 import ErrorHandlin.ErrorHandler;
+import Instalador.DB2Ejecutor;
 import Lectura.Lector;
 import Modelo.ModeloBD;
 import Modelo.Usuario;
@@ -303,8 +304,5 @@ public class ConexionBD {
             e.printStackTrace();
             return false;
         }
-    }
-    public static void main(String[] args) throws SQLException {
-        getConector().abrirConexionInstancia("SANTIAGO", "santiago", "Usuarios", "54000");
     }
 }
