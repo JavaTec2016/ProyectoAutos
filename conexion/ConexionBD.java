@@ -305,6 +305,6 @@ public class ConexionBD {
         }
     }
     public static void main(String[] args) throws SQLException {
-        getConector().abrirConexionInstancia("SANTIAGO", "santiago", "Usuarios", "60000");
+        getConector().abrirConexionInstancia("SANTIAGO", "santiago", "Usuarios", "54000");
     }
 }
