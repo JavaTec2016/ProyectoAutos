@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class ModeloBD implements Registrable {
+public abstract class ModeloBD implements Registrable {
     static HashMap<String, Class<? extends ModeloBD>> modelos = new HashMap<>();
     public static void registrarModelo(Class<? extends ModeloBD> c){
         modelos.put(c.getSimpleName(), c);

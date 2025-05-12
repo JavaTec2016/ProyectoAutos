@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 public class Ventana extends JFrame {
     PanelHook ventanaPrincipal;
     Login ventanaLogin;
+    ABCC control;
+
     CardLayout layout = null;
 
     String tablaActual = null;
@@ -268,7 +270,8 @@ public class Ventana extends JFrame {
                         conectar("SANTIAGO", "santiago", "Autos");
                 if(cod!=0) return;
                 try {
-                    configurarABCC("Cliente");
+                    control = new ABCC("Cliente");
+                    add(control.ventana.componente, "principal");
                 } catch (InvocationTargetException ex) {
                     throw new RuntimeException(ex);
                 } catch (NoSuchMethodException ex) {
@@ -280,9 +283,9 @@ public class Ventana extends JFrame {
             }
         });
     }
-    public void cambiarALogin(){
+    public void cambiarALogin() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         if(ventanaLogin == null){
-            ventanaLogin = FormHook.crearLogin(getSize());
+            ventanaLogin = FormHook.crearLogin();
             configurarLogin();
             add(ventanaLogin.componente, "login");
 
@@ -547,7 +550,7 @@ public class Ventana extends JFrame {
                         try {
 
                             ConexionBD.getConector().ejecutarScriptInicial();
-                            v.cambiarALogin();
+                            //v.cambiarALogin();
 
                         } catch (IOException e) {
                             System.out.println("Error al abrir el script: ");
@@ -580,7 +583,11 @@ public class Ventana extends JFrame {
                 Ventana.registrarHandlers(v);
 
                 v.setVisible(true);
-                v.cambiarALogin();
+                try {
+                    v.cambiarALogin();
+                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }

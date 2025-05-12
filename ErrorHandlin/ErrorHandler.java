@@ -3,6 +3,8 @@ package ErrorHandlin;
 import java.util.HashMap;
 
 public class ErrorHandler {
+    public static final int OK = 0;
+    public static final int LOGIN_NO_USER = 1;
     public static final int OBJECT_NOT_EXISTS = -204;
     public static final int BAD_SQL = -84;
     public static final int SQL_TOO_BIG = -101;
