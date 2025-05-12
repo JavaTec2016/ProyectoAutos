@@ -117,13 +117,16 @@ public class Ventana extends JFrame {
     public void handlearError(int codigo, Object... args){
         ErrorHandler.ejecutarHandler(codigo, args);
     }
-
+    public static void panelError(String msg, String titulo){
+        JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
+    }
     /**
      * Registra funciones para manejar distintos errores
      * todo:
      * separar la funcion en varias, segun los parametros que reciban los handlers
      * @param v Ventana en la cual se muestran mensajes de error
      */
+
     public static void registrarHandlers(Ventana v){
 
         ///VALIDACION POSTERIOR
@@ -580,7 +583,6 @@ public class Ventana extends JFrame {
             @Override
             public void run() {
                 Ventana v = new Ventana();
-                Ventana.registrarHandlers(v);
 
                 v.setVisible(true);
                 try {

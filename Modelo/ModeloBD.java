@@ -4,8 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public abstract class ModeloBD implements Registrable {
     static HashMap<String, Class<? extends ModeloBD>> modelos = new HashMap<>();
@@ -105,6 +106,47 @@ public abstract class ModeloBD implements Registrable {
     public static Integer[] obtenerForaneasDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         return (Integer[]) invocar(modelo, "obtenerForaneas");
     }
+
+    /**
+     * Filtra el arreglo dado, conserva los elementos en los índices de llaves primarias del modelo
+     * @param modelo modelo con el cual se filtrarán los datos
+     * @param filtrables el arreglo de datos a filtrar con el modelo
+     * @return arreglo filtrado
+     * @param <T> tipo de dato del arreglo
+     * @throws InvocationTargetException si falla la obtención de índices primarios del modelo
+     * @throws NoSuchMethodException si el modelo no cuenta con método para obtener índices primarios
+     * @throws IllegalAccessException si el método del modelo no es accesible
+     */
+    public static <T> T[] dePrimarias(String modelo, T[] filtrables) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Integer[] primarias = obtenerPrimariasDe(modelo);
+        Object[] out = new Object[primarias.length];
+
+        for (int i = 0; i < primarias.length; i++) {
+
+            out[i] = filtrables[primarias[i]];
+        }
+        return (T[]) out;
+    }
+
+    /**
+     * Obtiene los nombres de los campos primarios del modelo
+     * @param modelo modelo a obtener los nombres de sus campos primarios
+     * @return arreglo con los nombres
+     * @throws InvocationTargetException si falla la obtención de índices primarios del modelo
+     * @throws NoSuchMethodException si el modelo no cuenta con método para obtener índices primarios
+     * @throws IllegalAccessException si el método del modelo no es accesible
+     */
+    public static String[] obtenerNombresPrimariasDe(String modelo) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        return dePrimarias(modelo, obtenerCamposNombresDe(modelo));
+    }
+
+    /**
+     * Crea una nueva instancia de un modelo con los datos proporcionados.
+     * Los tipos y el orden de los datos deben coincidir con los del primer constructor del modelo
+     * @param nombre nombre del modelo a instanciar
+     * @param args datos de instancia
+     * @return nueva instancia del modelo
+     */
     public static ModeloBD instanciar(String nombre, Object[] args){
         Class<? extends ModeloBD> modlemombo = getModelo(nombre);
         Constructor<? extends ModeloBD> c = (Constructor<? extends ModeloBD>) modlemombo.getDeclaredConstructors()[0];

@@ -114,7 +114,9 @@ public class Registro extends PanelHook {
      * @param ac ActionListener con la logica deseada
      */
     public void configurarEliminar(ActionListener ac){
-        btnEliminar.removeActionListener(btnEliminar.getActionListeners()[0]);
+        for (ActionListener actionListener : btnEliminar.getActionListeners()) {
+            btnEliminar.removeActionListener(actionListener);
+        }
         btnEliminar.addActionListener(ac);
     }
 
@@ -123,7 +125,9 @@ public class Registro extends PanelHook {
      * @param ac ActionListener con la logica deseada
      */
     public void configurarEditar(ActionListener ac){
-        btnEditar.removeActionListener(btnEditar.getActionListeners()[0]);
+        for (ActionListener actionListener : btnEditar.getActionListeners()) {
+            btnEditar.removeActionListener(actionListener);
+        }
         btnEditar.addActionListener(ac);
     }
 

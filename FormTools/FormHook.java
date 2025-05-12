@@ -108,7 +108,17 @@ public class FormHook {
     public Boolean[] obtenerNoNulos(){
         return nonulos.values().toArray(new Boolean[0]);
     }
+    public String[] obtenerCamposNombres(){ return campos.keySet().toArray(new String[0]); }
+    public String obtenerLabel(String campo){
+        return labels.get(campo);
+    }
+    public Integer getLongitud(String campoNombre){
+        return longitudes.get(campoNombre);
+    }
 
+    public Integer getUmbral(String campoNombre){
+        return umbrales.get(campoNombre);
+    }
     /**
      * Establece las dimensiones de todos los campos del formulario
      * @param w tamaño horizontal, si es -1 no se efectuan cambios

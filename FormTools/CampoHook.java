@@ -3,6 +3,7 @@ package FormTools;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -119,5 +120,9 @@ public class CampoHook {
             else return null;
         }
         return ret;
+    }
+    public void addActionListener(ActionListener a){
+        if(!(componente instanceof JButton)) return;
+        ((JButton) componente).addActionListener(a);
     }
 }
