@@ -48,6 +48,8 @@ public class ABCC extends JPanel{
         configurarAgregar();
         registrarMensajesValidacionGenericos();
         registrarHandlersValidacion();
+        registrarHandlersSQL();
+
         actualizarTablaABCCThread(selecNombres, filtroNombres, filtroValores);
         add(ventana.componente);
     }
@@ -83,6 +85,7 @@ public class ABCC extends JPanel{
         }else{
             try {
                 modificar(modelo, ModeloBD.extraerPrimarias(modeloSeleccionado));
+                cambiarSeleccion(null);
             } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -135,6 +138,11 @@ public class ABCC extends JPanel{
         });
         ErrorHandler.registrarHandler(Validador.REGEX_FAIL, e->{
             panelError(e[0].toString(), "Caracteres o formato no permitidos");
+        });
+    }
+    public void registrarHandlersSQL(){
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
+            Ventana.panelError("Ya existe un registro con el mismo identificador", "Error de datos");
         });
     }
     /**

@@ -127,7 +127,7 @@ public class ConexionBD {
      * @throws SQLException si ocurre un error durante la operación
      */
     public Userio obtenerUsuario(String usuario, String pass) throws SQLException {
-        abrirConexionInstancia(usuario, pass, "Usuario", Config.INSTANCIA_USUARIOS_PUERTO);
+        abrirConexionInstancia(usuario, pass, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
         ArrayList<ModeloBD> ar = DAO.d.obtenerRegistros("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
         return (Userio)ar.get(0);
     }
@@ -221,6 +221,10 @@ public class ConexionBD {
      * @throws SQLException si falla la inserción del dato en la instrucción
      */
     public void colocarPrepared(int idx, Object dato) throws SQLException {
+        if(dato == null) {
+            st.setObject(idx, null);
+            return;
+        };
         switch (dato.getClass().getSimpleName()){
             case "Integer": st.setInt(idx, (Integer)dato); break;
             case "Short": st.setShort(idx, (Short) dato); break;
@@ -230,8 +234,9 @@ public class ConexionBD {
             case "BigDecimal": st.setBigDecimal(idx, (BigDecimal)dato); break;
             case "Float": st.setFloat(idx, (Float)dato); break;
             case "Double": st.setDouble(idx, (Double) dato); break;
+            case "Boolean": st.setBoolean(idx, (Boolean)dato); break;
             default:
-                System.out.println("Tipo de dato desconocido: " + dato.getClass().getSimpleName());
+                System.out.println("PREPARED STATEMENT Tipo de dato desconocido: " + dato.getClass().getSimpleName());
                 break;
         }
     }
@@ -260,8 +265,15 @@ public class ConexionBD {
         Install.crearInstanciaUsuario();
         DB2Ejecutor.instalarBases();
     }
-
+    public void autoInstalar() throws IOException, InterruptedException {
+        try {
+            abrirConexionInstancia(Config.USER, Config.PASS, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
+            cerrarConexion();
+        } catch (SQLException e) {
+            inicializar();
+        }
+    }
     public static void main(String[] args) throws SQLException, IOException {
-        getConector().abrirConexionInstancia("SANTIAGO", "santiago", "userio", "55000");
+        //getConector().abrirConexionInstancia("SANTIAGO", "santiago", "userio", "55000");
     }
 }

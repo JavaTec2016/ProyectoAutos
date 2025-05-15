@@ -1,12 +1,18 @@
 package FormTools;
 
+import org.jdatepicker.DateModel;
 import org.jdatepicker.JDatePicker;
 
 import javax.swing.*;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
 public interface Extractor {
@@ -18,25 +24,35 @@ public interface Extractor {
     static Object extraerDato(JComponent campo){
 
         Class<? extends JComponent> clase = campo.getClass();
+        System.out.println("EXTRACTOR CLASE " + clase.getSimpleName().toLowerCase());
         switch (clase.getSimpleName().toLowerCase()){
             case "jtextfield":
                 String t = ((JTextField)campo).getText();
                 if(t.isEmpty()) return null;
                 else return t;
 
+            case "decimalfield":
+                return ((DecimalField)campo).getDecimal();
+
             case "jcombobox":
                 return ((JComboBox)campo).getSelectedItem();
 
-            case "checkbox":
+            case "jcheckbox":
                 return ((JCheckBox)campo).isSelected();
 
-            case "datepicker":
-                var k = ((JDatePicker)campo).getModel().getValue();
-                System.out.println(k);
-                return k;
+            case "jdatepicker":
+                DateModel k = ((JDatePicker)campo).getModel();
+                return formatearFecha(k);
 
             default: return null;
         }
+    }
+    public static String formatearFecha(DateModel model){
+        String mes = "0"+(model.getMonth()+1);
+        mes = mes.substring(mes.length()-2);
+        String dia = "0"+(model.getDay());
+        dia = dia.substring(dia.length()-2);
+        return model.getYear()+"-"+mes+"-"+dia;
     }
     /**
      * Intenta convertir un dato a una fecha SQL
@@ -44,13 +60,7 @@ public interface Extractor {
      * @return Fecha convertida, o nulo si la conversión falla
      */
     static Date convertirDate(String dato){
-        try {
-            return DateFormat.getInstance().parse(dato);
-        } catch (ParseException e) {
-            System.out.println("ERROR AL DATEAR: ");
-            e.printStackTrace();
-            return null;
-        }
+        return java.sql.Date.valueOf(dato);
     }
     /**
      * Convierte un dato a su respectivo tipo
@@ -67,8 +77,10 @@ public interface Extractor {
             case "Double": return Double.parseDouble(dato);
             case "Boolean": return Boolean.parseBoolean(dato);
             case "Date": return Extractor.convertirDate(dato);
+            case "BigDecimal": return new BigDecimal(dato);
+            case "Short": return Short.parseShort(dato);
             default:
-                System.out.println("Tipo de dato desconocido: " + tipo.getSimpleName());
+                System.out.println("EXTRACTOR Tipo de dato desconocido: " + tipo.getSimpleName());
         }
         return null;
     }
@@ -78,6 +90,7 @@ public interface Extractor {
      * @param dato dato a mostrar
      */
     static void colocarDato(JComponent comp, Object dato){
+        if(dato == null) return;
         if(comp instanceof JTextField){
             ((JTextField) comp).setText(dato.toString());
         }
@@ -91,6 +104,12 @@ public interface Extractor {
             Calendar.getInstance().setTime((java.sql.Date) dato);
             Calendar c = Calendar.getInstance();
             ((JDatePicker) comp).getModel().setDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+        }
+        else if(comp instanceof DecimalField){
+            if(dato.toString().contains(".")) ((DecimalField) comp).setDecimal(dato.toString());
+            else{
+                System.out.println("EXTRACTOR Decimal invalido: " + dato.toString());
+            }
         }
     }
     static boolean probarExpresion(String dato, String regex){

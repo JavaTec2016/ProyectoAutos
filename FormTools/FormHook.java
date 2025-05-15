@@ -231,6 +231,12 @@ public class FormHook {
             CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(nombre), exps.get(nombre)));
             CampoHook label = new CampoHook(new JLabel(labels.get(nombre)));
 
+            if(input.componente instanceof JCheckBox){
+                ((JCheckBox) input.componente).setText(labels.get(nombre));
+                input.setForeground(Color.white);
+                input.componente.setOpaque(false);
+                ((JLabel)label.componente).setText("");
+            }
             campoHook.appendChild("label", label, gc);
             campoHook.appendChild("input", input, gc);
         }catch (NullPointerException e){
@@ -263,6 +269,7 @@ public class FormHook {
     public Object extraerDeCampo(CampoHook campo, String nombre){
         JComponent c = campo.getChild("input").componente;
         Object crudo = Extractor.extraerDato(c);
+
         if(crudo instanceof String) return Extractor.convertir(crudo.toString(), tipoDatos.get(nombre));
         return crudo;
     }
@@ -447,9 +454,11 @@ public class FormHook {
     static JComponent obtenerComponente(String tipo, String regex){
         switch (tipo){
             case "textfield": return makeRestrictedTextField(regex);
+            case "decimalfield": return new DecimalField();
             case "passfield": return makeRestrictedPassField(regex);
             case "datefield": return new JDatePicker();
             case "combobox": return  new JComboBox<>();
+            case "checkbox": return new JCheckBox();
         }
         System.out.println("Tipo de comp desconocido: " + tipo);
         return null;
@@ -690,7 +699,7 @@ public class FormHook {
 
         }
         agregarRegistroAdapter(registro);
-
+        registro.componente.setBackground(registro.colorSinEnfoque);
         constraints.weightx = freeWeight/2;
         constraints.fill = GridBagConstraints.NONE;
 
@@ -958,11 +967,11 @@ public class FormHook {
         f.generar(gc);
         f.attachBotonesEnSeccion("foot");
         f.setLabelsSize(new Dimension(300, 20));
-        f.setInputsSize(new Dimension(300, 30));
+        f.setInputsSize(new Dimension(300, 20));
         f.setLabelsColor(Color.white);
         f.setCamposOpaque(false);
         f.attachCamposEn(form, gf);
-
+        form.componente.revalidate();
         ///FOOT (nomas botones
 
         CampoHook btnAgregar = FormHook.makeFormBoton("AGREGAR", Color.GRAY, Color.CYAN);
@@ -1204,7 +1213,13 @@ public class FormHook {
                     int[] tamaniosAuto = new int[datos.size()];
                     int tamanioTotal = datos.size();
                     for (int i = 0; i < display.length; i++) {
-                        display[i] = new JLabel(datos.values().stream().toList().get(i).toString());
+
+                        Object datoCampo = datos.values().stream().toList().get(i);
+                        String dato = "sin dato";
+                        if(datoCampo != null) dato = datoCampo.toString();
+
+                        display[i] = new JLabel(dato);
+                        if(datoCampo == null) display[i].setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 15));
                         ids[i] = datos.keySet().stream().toList().get(i);
                         tamaniosAuto[i] = 1;
                     }

@@ -158,4 +158,11 @@ public abstract class ModeloBD implements Registrable {
         }
     }
     public LinkedHashMap<String, Object> getInfoImportante(){return null;}
+
+    public static void registrarModelos(){
+        registrarModelo(Cliente.class);
+        registrarModelo(Vendedor.class);
+        registrarModelo(Userio.class);
+        registrarModelo(Auto.class);
+    }
 }

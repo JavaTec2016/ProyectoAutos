@@ -95,6 +95,10 @@ public class CampoHook {
         return this;
     }
     public CampoHook setPreferredSize(Dimension d){
+        if(componente == null){
+            System.out.println("Componente nulo: " + id);
+            return this;
+        }
         componente.setPreferredSize(d);
         return this;
     }

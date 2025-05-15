@@ -12,8 +12,7 @@ CREATE TABLE Cliente(
     num_domicilio VARCHAR(10),
     email VARCHAR(50),
     fuente_referencia VARCHAR(32),
-    es_potencial BOOLEAN NOT NULL,
-    FOREIGN KEY(referencia) REFERENCES Cliente(id)
+    es_potencial BOOLEAN NOT NULL
 );
 
 CREATE INDEX index_cliente_referencia ON Cliente(fuente_referencia);

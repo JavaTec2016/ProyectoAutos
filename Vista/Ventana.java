@@ -116,78 +116,6 @@ public class Ventana extends JFrame {
     public static void panelError(String msg, String titulo){
         JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
     }
-    /**
-     * Registra funciones para manejar distintos errores
-     * todo:
-     * separar la funcion en varias, segun los parametros que reciban los handlers
-     * @param v Ventana en la cual se muestran mensajes de error
-     */
-
-    public static void registrarHandlers(Ventana v){
-
-        ///VALIDACION POSTERIOR
-
-        ///data[0] sera el nombre del campo en este error
-        ///data[1] sera la longitud maxima del dato
-        ///data[2] sera el umbral del dato
-        ErrorHandler.registrarHandler(Validador.NULL, data -> {
-            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe ser nulo", "Error de datos", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(Validador.TOO_LONG, data -> {
-            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe exceder "+data[1]+" caracteres", "Error de datos", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(Validador.TOO_SHORT, data -> {
-            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no debe ser menor a "+data[2]+" caracteres", "Error de datos", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(Validador.REGEX_FAIL, data -> {
-            JOptionPane.showMessageDialog(v, "El campo '"+data[0]+"' no es válido", "Error de datos", JOptionPane.ERROR_MESSAGE);
-        });
-
-        ////VALIDACION DE SQL
-
-        ///data[0] es el nombre del modelo
-        ErrorHandler.registrarHandler(ErrorHandler.OBJECT_NOT_EXISTS, data -> {
-            JOptionPane.showMessageDialog(v, "La tabla '"+data[0].toString()+"' no existe", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.BAD_SQL, data -> {
-            JOptionPane.showMessageDialog(v, "la instrucción dada no es válida", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.SQL_TOO_BIG, data -> {
-            JOptionPane.showMessageDialog(v, "la instrucción excede el tamaño máximo soportado", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.SQL_ILLEGAL_SYMBOL, data -> {
-            JOptionPane.showMessageDialog(v, "la instrucción contiene simbolos no permitidos", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.SQL_MISSING_PERMISSION, data -> {
-            JOptionPane.showMessageDialog(v, "No tiene permiso para realizar esta acción", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
-            JOptionPane.showMessageDialog(v, "Ya hay un registro con esa información", "Error de inserción", JOptionPane.ERROR_MESSAGE);
-        });
-        ///luego data son las llaves foraneas que pueden fallar
-        ErrorHandler.registrarHandler(ErrorHandler.SQL_CONSTRAINT_FAIL, data -> {
-            try {
-                String d = "";
-                String[] dataa = ModeloBD.obtenerCamposNombresDe(data[0].toString());
-                Integer[] idxs = ModeloBD.obtenerPrimariasDe(data[0].toString());
-
-                for (int idx : idxs) {
-                    d += dataa[idx]+", ";
-                }
-                d=d.substring(0, data.length-2);
-                JOptionPane.showMessageDialog(v, "Uno o más de los datos no se encuentra en la base de datos: \n"+d, "Error de inserción", JOptionPane.ERROR_MESSAGE);
-
-            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                JOptionPane.showMessageDialog(v, "Algunos de los datos no se encuentran en la base de datos", "Error de inserción", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-                return;
-            }
-
-        });
-        ErrorHandler.registrarHandler(ErrorHandler.RESULT_SET_OUT_OF_BOUNDS, data -> {
-            JOptionPane.showMessageDialog(v, "Ocurrió un error al obtener datos de un registro", "Error de consulta", JOptionPane.ERROR_MESSAGE);
-        });
-    }
 
     /**
      * Realiza una conexión a una BD con los parámetros dados
@@ -266,10 +194,10 @@ public class Ventana extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 ArrayList<Object> l = ventanaLogin.form.extraer();
                 int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
-                        conectar("SANTIAGO", "santiago", "Autos");
+                        conectar("", "", "Autos");
                 if(cod!=0) return;
                 try {
-                    control = new ABCC("Cliente");
+                    control = new ABCCAuto();
                     add(control.ventana.componente, "principal");
                 } catch (InvocationTargetException ex) {
                     throw new RuntimeException(ex);
@@ -287,8 +215,6 @@ public class Ventana extends JFrame {
             ventanaLogin = FormHook.crearLogin();
             configurarLogin();
             add(ventanaLogin.componente, "login");
-
-
         }
         layout.show(getContentPane(), "login");
         revalidate();
@@ -326,10 +252,9 @@ public class Ventana extends JFrame {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ConexionBD.getConector().inicializar();
+        ConexionBD.getConector().autoInstalar();
+        ModeloBD.registrarModelos();
 
-        ModeloBD.registrarModelo(Cliente.class);
-        ModeloBD.registrarModelo(Userio.class);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

@@ -9,11 +9,14 @@ public class Validador {
     public static final int REGEX_FAIL = 4;
 
     public static int probarString(String ent, String regex, int longitud, boolean noNulo, int umbral){
-        if(ent == null || ent.isEmpty() && noNulo) return NULL;
-        if(ent.length() > longitud && longitud > -1) return TOO_LONG;
-        if(ent.length() < umbral) return TOO_SHORT;
-        if(regex != null && !regex.isEmpty()){
-            if(!Pattern.compile(regex).matcher(ent).matches()) return REGEX_FAIL;
+        System.out.println("VALIDADOR " + ent + ", " + noNulo);
+        if((ent == null || ent.isEmpty()) && noNulo) return NULL;
+        else if(ent != null) {
+            if(ent.length() > longitud && longitud > -1) return TOO_LONG;
+            if(ent.length() < umbral) return TOO_SHORT;
+            if(regex != null && !regex.isEmpty()){
+                if(!Pattern.compile(regex).matcher(ent).matches()) return REGEX_FAIL;
+            }
         }
         return 0;
     }
