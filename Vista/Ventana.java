@@ -1,16 +1,13 @@
 package Vista;
 
-import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
 import ErrorHandlin.Validador;
 import FormTools.FormHook;
 import FormTools.ScrollHook;
 import FormTools.PanelHook;
-import Instalador.Install;
 import Modelo.Cliente;
 import Modelo.ModeloBD;
-import Modelo.Registrable;
-import Modelo.Usuario;
+import Modelo.Userio;
 import conexion.ConexionBD;
 import controlador.DAO;
 
@@ -25,7 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.regex.Pattern;
 
 public class Ventana extends JFrame {
     PanelHook ventanaPrincipal;
@@ -330,12 +326,10 @@ public class Ventana extends JFrame {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        //Install.ejecutar();
-        for (String s : Install.salida) {
-            System.out.println(s);
-        }
+        ConexionBD.getConector().inicializar();
+
         ModeloBD.registrarModelo(Cliente.class);
-        ModeloBD.registrarModelo(Usuario.class);
+        ModeloBD.registrarModelo(Userio.class);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

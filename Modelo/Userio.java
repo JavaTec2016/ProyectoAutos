@@ -1,13 +1,13 @@
 package Modelo;
 
-public class Usuario extends ModeloBD {
+public class Userio extends ModeloBD {
     String usuario;
     String password;
     Boolean lectura;
     Boolean escritura;
     Boolean admin;
 
-    public Usuario(String usuario, String password, Boolean lectura, Boolean escritura, Boolean admin) {
+    public Userio(String usuario, String password, Boolean lectura, Boolean escritura, Boolean admin) {
         this.usuario = usuario;
         this.password = password;
         this.lectura = lectura;
@@ -15,13 +15,13 @@ public class Usuario extends ModeloBD {
         this.admin = admin;
     }
     public static String[] obtenerCamposNombres(){
-        return obtenerCampoNombresDe(Usuario.class);
+        return obtenerCampoNombresDe(Userio.class);
     }
     public static String[] obtenerLabels(){
         return new String[]{"Usuario", "Contraseña", "Lectura", "Escritura", "Administrador"};
     }
     public static Class<?>[] obtenerCampoTipos(){
-        return obtenerCampoTiposDe(Usuario.class);
+        return obtenerCampoTiposDe(Userio.class);
     }
     public static String[] obtenerCampoTiposSQL(){
         return new String[]{"VARCHAR", "VARCHAR", "BOOLEAN", "BOOLEAN", "BOOLEAN"};

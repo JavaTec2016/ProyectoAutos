@@ -1,30 +1,36 @@
+CONNECT RESET;
+CREATE DATABASE Autos;
+CONNECT TO Autos;
 
 CREATE TABLE Cliente(
     id INT NOT NULL PRIMARY KEY,
     nombre VARCHAR(32) NOT NULL,
     apellido VARCHAR(32) NOT NULL,
-    telefono VARCHAR(10) NOT NULL,
+    telefono VARCHAR(10),
     ciudad VARCHAR(50),
     calle VARCHAR(50),
     num_domicilio VARCHAR(10),
     email VARCHAR(50),
-    referencia INT,
-    fuente_referencia INT,
+    fuente_referencia VARCHAR(32),
     es_potencial BOOLEAN NOT NULL,
-
     FOREIGN KEY(referencia) REFERENCES Cliente(id)
 );
 
+CREATE INDEX index_cliente_referencia ON Cliente(fuente_referencia);
+CREATE INDEX index_cliente_nombre ON Cliente(nombre);
+
 CREATE TABLE Vendedor(
-    id INT NOT NULL PRIMARY KEY;
+    id INT NOT NULL PRIMARY KEY,
     nombre VARCHAR(32) NOT NULL,
     apellido VARCHAR(32) NOT NULL,
-    telefono VARCHAR(10) NOT NULL,
-)
+    telefono VARCHAR(10) NOT NULL
+);
+CREATE INDEX index_vendedor_nombre ON Vendedor(nombre);
+
 CREATE TABLE Auto_Modelo(
     id INT NOT NULL PRIMARY KEY,
-    Nombre VARCHAR(20) NOT NULL,
-)
+    nombre VARCHAR(20) NOT NULL
+);
 
 CREATE TABLE Auto(
     id INT NOT NULL PRIMARY KEY,
@@ -38,83 +44,176 @@ CREATE TABLE Auto(
     numero_puertas SMALLINT NOT NULL,
     peso_kg SMALLINT NOT NULL,
     capacidad SMALLINT NOT NULL,
-    nuevo BOOLEAN NOT NULL
+    nuevo BOOLEAN NOT NULL,
+    FOREIGN KEY(id_modelo) REFERENCES Auto_Modelo(id)
+);
+
+CREATE INDEX index_auto_precio ON Auto(precio);
+CREATE INDEX index_id_modelo ON Auto(id_modelo);
+CREATE INDEX index_auto_cilindros ON Auto(numero_cilindros);
+
+CREATE TABLE Auto_Opcion (
+    id INT NOT NULL PRIMARY KEY,
+    id_auto INT NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    opcion VARCHAR(32) NOT NULL,
+    FOREIGN KEY(id_auto) REFERENCES Auto(id)
+);
+
+CREATE INDEX index_opcion_precio ON Auto_Opcion(precio);
+CREATE INDEX index_id_auto ON Auto_Opcion(id_auto);
+
+CREATE TABLE Cliente_Adorno (
+    id INT NOT NULL PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_opcion INT NOT NULL,
+    FOREIGN KEY(id_cliente) REFERENCES Cliente(id),
+    FOREIGN KEY(id_opcion) REFERENCES Auto_Opcion(id)
+);
+CREATE INDEX index_id_cliente ON Cliente_Adorno(id_cliente);
+CREATE INDEX index_id_opcion ON Cliente_Adorno(id_opcion);
+
+CREATE VIEW Opciones_Activas (
+    id_adorno,
+    id_cliente,
+    id_opcion,
+    id_auto,
+    opcion,
+    precio
+) AS
+SELECT
+    a.id,
+    a.id_cliente,
+    o.opcion,
+    o.id_auto,
+    o.opcion,
+    o.precio
+FROM Cliente_Adorno AS a
+    INNER JOIN Auto_Opcion AS o
+        ON o.id = a.id_opcion;
+
+--#SET TERMINATOR %
+CREATE OR REPLACE FUNCTION adornos_monto (
+    id_auto_objetivo INT
 )
+RETURNS DECIMAL(10, 2)
+LANGUAGE SQL
+READS SQL DATA
+BEGIN
+	DECLARE total DECIMAL(10, 2);
+	SELECT SUM(precio) INTO total FROM Opciones_Activas WHERE id_auto = id_auto_objetivo;
+	RETURN total;
+END%
+--#SET TERMINATOR ;
 
 CREATE TABLE Venta (
-    id INT NOT NULL,
+    id INT NOT NULL PRIMARY KEY,
     fecha DATE NOT NULL,
     id_cliente INT NOT NULL,
-    comision FLOAT NOT NULL,
+    id_vendedor INT NOT NULL,
+    comision DECIMAL(10, 2) NOT NULL,
     id_auto INT NOT NULL,
     precio_final DECIMAL(10, 2) NOT NULL,
     financiamiento VARCHAR(32) NOT NULL,
     kilometraje INT NOT NULL,
     fecha_entrega DATE,
-    garantia_tipo SMALLINT NOT NULL,
-
+    garantia_tipo VARCHAR(32) NOT NULL,
     FOREIGN KEY(id_cliente) REFERENCES Cliente(id),
     FOREIGN KEY(id_auto) REFERENCES Auto(id),
-    FOREIGN KEY(id_vendedor) REFERENCES Vendedor(id),
-)
+    FOREIGN KEY(id_vendedor) REFERENCES Vendedor(id)
+);
+
+CREATE INDEX index_id_cliente ON Venta(id_cliente);
+CREATE INDEX index_id_vendedor ON Venta(id_vendedor);
+CREATE INDEX index_garantia_tipo ON Venta(id_vendedor);
 
 CREATE TABLE Intercambio (
     id INT NOT NULL PRIMARY KEY,
-    id_auto INT NOT NULL,
     id_venta INT NOT NULL,
     marca VARCHAR(32) NOT NULL,
     modelo VARCHAR(32) NOT NULL,
     anio SMALLINT NOT NULL,
     valor_estimado DECIMAL(10,2),
+    FOREIGN KEY(id_venta) REFERENCES Venta(id)
 
-    FOREIGN KEY(id_auto) REFERENCES Auto(id),
-    FOREIGN KEY(id_venta) REFERENCES Venta(id),
 )PARTITION BY RANGE(valor_estimado) (
-    STARTING FROM (1.00) ENDING AT (99999999.00) EVERY (10000.00)
-)
+    STARTING FROM (0.00) ENDING AT (10000000.00) EVERY (2500000.00)
+);
+
+CREATE INDEX index_id_venta ON Intercambio(id_venta);
+CREATE INDEX index_marca ON Intercambio(marca);
+CREATE INDEX index_modelo ON Intercambio(modelo);
+
+CREATE VIEW autos_disponibles (
+	id_auto,
+	precio,
+	id_modelo,
+	modelo,
+	fecha_fabricacion
+) AS
+SELECT
+	a.id,
+	a.precio,
+	a.id_modelo,
+	m.nombre,
+	a.fecha_fabricacion
+FROM
+	Auto AS a
+	INNER JOIN
+		Auto_Modelo AS m
+		ON a.id_modelo = m.id
+	WHERE (SELECT COUNT(*) FROM Venta WHERE a.id = id_auto) = 0;
 
 CREATE TABLE Cargo_Licencia(
     id INT NOT NULL PRIMARY KEY,
     id_venta INT NOT NULL,
     costo DECIMAL(10,2) NOT NULL,
     impuesto DECIMAL(10, 2) NOT NULL,
-    seguro_cubierto BOOLEAN NOT NULL
+    seguro_cubierto BOOLEAN NOT NULL,
+    FOREIGN KEY(id_venta) REFERENCES Venta(id)
+);
 
-    FOREIGN KEY(id_venta) REFERENCES Venta(id),
-)
+--#SET TERMINATOR %
+CREATE TRIGGER Opciones_Adicion BEFORE INSERT ON Venta REFERENCING NEW AS NEWLER
+FOR EACH ROW MODE DB2SQL
+BEGIN ATOMIC
+    SET precio_final = (NEWLER.precio_final * (1+adornos_monto(NEWLER.id_auto)));
+END%
 
-CREATE TABLE Auto_Opcion (
+CREATE OR REPLACE TRIGGER auto_opcion_delete AFTER DELETE ON Auto_Opcion
+REFERENCING OLD AS OLDLER
+FOR EACH ROW MODE DB2SQL
+BEGIN ATOMIC
+	INSERT INTO Auto_Opcion_eliminado VALUES (OLDLER.id, OLDLER.id_auto, OLDLER.precio, OLDLER.opcion, NULL, CURRENT DATE);
+END%
+
+--#SET TERMINATOR ;
+
+CREATE TABLE Auto_Eliminado(
+    id INT NOT NULL PRIMARY KEY,
+    precio DECIMAL(10, 2) NOT NULL,
+    id_modelo INT NOT NULL,
+    fecha_fabricacion DATE NOT NULL,
+    pais_fabricacion VARCHAR(32) NOT NULL,
+    estado_fabricacion VARCHAR(32) NOT NULL,
+    ciudad_fabricacion VARCHAR(32),
+    numero_cilindros SMALLINT NOT NULL,
+    numero_puertas SMALLINT NOT NULL,
+    peso_kg SMALLINT NOT NULL,
+    capacidad SMALLINT NOT NULL,
+    nuevo BOOLEAN NOT NULL,
+    usuario_eliminador VARCHAR(32),
+    fecha_eliminacion DATE NOT NULL
+);
+
+CREATE TABLE Auto_Opcion_Eliminado (
+    id INT NOT NULL PRIMARY KEY,
     id_auto INT NOT NULL,
-    incremento_precio FLOAT NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
     opcion VARCHAR(32) NOT NULL,
-
-    FOREIGN KEY(id_auto) REFERENCES Auto(id)
-)
-
-CREATE OR REPLACE FUNCTION obtener_opciones_precio (
-    id_objetivo INT
-)
-RETURNS DECIMAL(10, 2)
-LANGUAGE SQL
-READS SQL DATA
-BEGIN
-    DECLARE porcentaje_total FLOAT;
-    SELECT SUM(incremento_precio)
-    INTO porcentaje_total
-    FROM Auto_Opcion
-    WHERE id_auto = id_objetivo;
-
-    RETURN porcentaje_total*(SELECT precio FROM Auto WHERE id = id_objetivo FETCH 1 ROW ONLY);
-END;
-
-CREATE VIEW Factura_Inicial (
-    id_venta INT NOT NULL,
-    nombre VARCHAR(32) NOT NULL,
-    apellido VARCHAR(32) NOT NULL,
-    telefono VARCHAR(10) NOT NULL,
-    nombre_vendedor VARCHAR(32) NOT NULL,
-
-)
+    usuario_eliminador VARCHAR(32),
+    fecha_eliminacion DATE NOT NULL
+);
 
 CREATE TABLE Cliente_Eliminado(
     id INT NOT NULL PRIMARY KEY,
@@ -125,9 +224,24 @@ CREATE TABLE Cliente_Eliminado(
     calle VARCHAR(50) NOT NULL,
     num_domicilio VARCHAR(10) NOT NULL,
     email VARCHAR(50) NOT NULL,
-
-    usuario_eliminador VARCHAR(32) NOT NULL,
+    usuario_eliminador VARCHAR(32),
     fecha_eliminacion DATE NOT NULL
 ) PARTITION BY RANGE(fecha_eliminacion)(
-    STARTING '1/1/2000' ENDING '1/1/2030' EVERY 2 MONTHS
+    STARTING '1/1/2020' ENDING '1/1/2050' EVERY 12 MONTHS
+);
+
+CREATE TABLE Venta_Eliminada (
+    id INT NOT NULL PRIMARY KEY,
+    fecha DATE NOT NULL,
+    id_cliente INT NOT NULL,
+    id_vendedor INT NOT NULL,
+    comision DECIMAL(10, 2) NOT NULL,
+    id_auto INT NOT NULL,
+    precio_final DECIMAL(10, 2) NOT NULL,
+    financiamiento VARCHAR(32) NOT NULL,
+    kilometraje INT NOT NULL,
+    fecha_entrega DATE,
+    garantia_tipo VARCHAR(32) NOT NULL,
+    usuario_eliminador VARCHAR(32),
+    fecha_eliminacion DATE NOT NULL
 );

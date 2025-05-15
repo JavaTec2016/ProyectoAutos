@@ -1,7 +1,7 @@
 package FormTools;
 
 import Modelo.ModeloBD;
-import Modelo.Usuario;
+import Modelo.Userio;
 import Vista.Login;
 import Vista.Registro;
 import org.jdatepicker.JDatePicker;
@@ -994,7 +994,7 @@ public class FormHook {
      * @return pantalla personalizada
      */
     public static Login crearLogin() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        FormHook form = FormHook.crearDeModelo(Usuario.class.getSimpleName());
+        FormHook form = FormHook.crearDeModelo(Userio.class.getSimpleName());
 
         PanelHook vertical = FormHook.makeGridBagPanel().setBackground(Color.WHITE);
         PanelHook horizontal = FormHook.makeFlowPanel().setBackground(Color.WHITE);
@@ -1019,7 +1019,7 @@ public class FormHook {
         form.attachBotonesEnSeccion("botones");
         form.generar();
         form.setCamposSizes(
-                Usuario.obtenerCamposNombres(),
+                Userio.obtenerCamposNombres(),
                 new Dimension[]{
                         new Dimension(620, 150),
                         new Dimension(620, 150),

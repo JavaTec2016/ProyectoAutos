@@ -1,10 +1,12 @@
 package conexion;
 
 import ErrorHandlin.ErrorHandler;
+import Instalador.Config;
 import Instalador.DB2Ejecutor;
+import Instalador.Install;
 import Lectura.Lector;
 import Modelo.ModeloBD;
-import Modelo.Usuario;
+import Modelo.Userio;
 import com.ibm.db2.jcc.am.Connection;
 import controlador.DAO;
 
@@ -13,23 +15,20 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 public class ConexionBD {
     static Connection conexion = null;
     static ConexionBD conector = null;
     public PreparedStatement st = null;
 
-    //usuario y esas cosas
-    public static String puertoUsuarios = "60000";
-    private Usuario usr;
+    private Userio usr;
     private ConexionBD(){}
 
     /**
      * Recupera el usuario actual de la sesión
      * @return usuario en sesión
      */
-    public Usuario getUsr() {
+    public Userio getUsr() {
         return usr;
     }
 
@@ -44,7 +43,6 @@ public class ConexionBD {
             Properties p = new Properties();
             p.put("user", usuario);
             p.put("password", contra);
-            p.put("securityMechanism", "9");
             conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, p);
 
             if(conexion != null && !conexion.isClosed()){
@@ -75,10 +73,10 @@ public class ConexionBD {
             Properties p = new Properties();
             p.put("user", usuario);
             p.put("password", contra);
-            //p.put("traceFile", "db2trace.out");
-            //p.put("traceLevel", "-1");
-            //p.put("securityMechanism", "9");
-            String url = "jdbc:db2://localhost:"+puerto+"/"+BD;
+            String url = "jdbc:db2://127.0.0.1:"+puerto+"/"+BD;
+            System.out.println(url);
+            System.out.println(usuario);
+            System.out.println(contra);
             conexion = (Connection) DriverManager.getConnection(url, p);
 
             if(conexion != null && !conexion.isClosed()){
@@ -128,10 +126,10 @@ public class ConexionBD {
      * @return modelo de Usuario
      * @throws SQLException si ocurre un error durante la operación
      */
-    public Usuario obtenerUsuario(String usuario, String pass) throws SQLException {
-        abrirConexionInstancia(usuario, pass, "Usuario", puertoUsuarios);
+    public Userio obtenerUsuario(String usuario, String pass) throws SQLException {
+        abrirConexionInstancia(usuario, pass, "Usuario", Config.INSTANCIA_USUARIOS_PUERTO);
         ArrayList<ModeloBD> ar = DAO.d.obtenerRegistros("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
-        return (Usuario)ar.get(0);
+        return (Userio)ar.get(0);
     }
     public void setAutoCommit(boolean estado) throws SQLException {
         conexion.setAutoCommit(estado);
@@ -160,11 +158,12 @@ public class ConexionBD {
      * @param pass contraseña
      * @return codigo de conexion, 0 si fue exitosa o su respectivo codigo de error
      */
-    public int abrirConexion2(String usuario,String pass){
-        int ocurrencia = probarCredenciales(usuario, pass, puertoUsuarios);
+    public int abrirConexion2(String usuario,String pass, String BD){
+        int ocurrencia = probarCredenciales(usuario, pass, Config.INSTANCIA_USUARIOS_PUERTO);
         if(ocurrencia==ErrorHandler.OK){
             try {
                 usr = obtenerUsuario(usuario, pass);
+                abrirConexion(usuario, pass, BD);
                 setAutoCommit(false);
             } catch (SQLException e) {
                 ocurrencia = e.getErrorCode();
@@ -253,56 +252,16 @@ public class ConexionBD {
     }
 
     /**
-     * Ejecuta la instrucción DML dada
-     * @param sql cadena con la instruccion
-     * @throws SQLException error de SQL
+     * Ejecuta scripts para crear la instancia de usuarios si no existe y cargar las bases de datos necesarias en sus respectivas instancias
+     * @throws IOException Si falla la lectura de un script
+     * @throws InterruptedException si algun proceso de inicializacion es cerrado repentinamente
      */
-    private void ejecutar(String sql) throws SQLException {//no debe usarse en consultas de a deberas
-        conexion.createStatement().executeUpdate(sql);
+    public void inicializar() throws IOException, InterruptedException {
+        Install.crearInstanciaUsuario();
+        DB2Ejecutor.instalarBases();
     }
 
-    /**
-     * Ejecuta la creacion de las tablas de la base de datos
-     * @throws IOException si ocurre un error al acceder al script de creacion
-     */
-    public void ejecutarScriptInicial() throws IOException {
-        StringBuilder scripo = new StringBuilder();
-        Lector.abrirScript("bd");
-        Lector.porCadaLinea(new Consumer<String>() {
-            @Override
-            public void accept(String line) {
-                scripo.append(line);
-                if (line.contains(";")){//fin de instruccion, ejecuta
-                    scripo.deleteCharAt(scripo.length()-1);
-                    System.out.println(scripo);
-                    try {
-                        ejecutar(scripo.toString());
-                    } catch (SQLException e) {
-                        System.out.println("La instruccion no se pudo completar ("+e.getErrorCode()+"): " + scripo.toString());
-                    }
-                    scripo.setLength(0);
-                }
-            }
-        });
-    }
-
-    /**
-     * Realiza una conexion a la instancia donde se almacenan usuarios y verifica las credenciales con los registros
-     * @param usuario nombre de usuario
-     * @param pass contraseña
-     * @return true si existe la combinacion de credenciales, o false en caso contrario
-     */
-    public boolean comprobarCredenciales(String usuario, String pass){
-        try {
-            getConector().abrirConexionInstancia("SANTIAGO", "santiago", "Usuarios", "60000");
-            ArrayList<ModeloBD> coincidencias = DAO.d.obtenerRegistros("Usuario", null,
-                    new String[]{"nombre", "password"}, new Object[]{usuario, pass});
-
-            return coincidencias.size() == 1;
-        } catch (SQLException e) {
-            System.out.println("ERROR AL COMPROBAR CREDENCIALES:");
-            e.printStackTrace();
-            return false;
-        }
+    public static void main(String[] args) throws SQLException, IOException {
+        getConector().abrirConexionInstancia("SANTIAGO", "santiago", "userio", "55000");
     }
 }

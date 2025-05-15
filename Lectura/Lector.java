@@ -13,15 +13,16 @@ public class Lector {
     public static String getSrcPath(){
         return new File("").getAbsolutePath().concat("/src");
     }
-
+    public static String getScriptPath(String nombre){
+        return getSrcPath().concat("/sql/").concat(nombre).concat(".sql");
+    }
     /**
      * Abre un script sql del directorio "sql" en el lector de archivos
      * @param nombre nombre del archivo
      * @throws FileNotFoundException si no se encontró el script
      */
     public static void abrirScript(String nombre) throws FileNotFoundException {
-        String bdRuta = getSrcPath().concat("/sql/");
-        reader = new BufferedReader(new FileReader(bdRuta.concat(nombre).concat(".sql")));
+        reader = new BufferedReader(new FileReader(getScriptPath(nombre)));
     }
 
     /**
@@ -38,4 +39,5 @@ public class Lector {
     public static void cargarStreamReader(InputStreamReader r){
         reader = new BufferedReader(r);
     }
+
 }
