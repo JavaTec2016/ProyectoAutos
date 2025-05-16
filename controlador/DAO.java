@@ -73,6 +73,7 @@ public class DAO {
         while (rs.next()){
             for (int i = 0; i < datos.length; i++) {
                 datos[i] = rs.getObject(i+1);
+                System.out.println("DAO DATO: " + datos[i] + " :: " + datos[i].getClass().getSimpleName());
             }
             modelos.add(ModeloBD.instanciar(tabla, datos));
         }

@@ -164,5 +164,9 @@ public abstract class ModeloBD implements Registrable {
         registrarModelo(Vendedor.class);
         registrarModelo(Userio.class);
         registrarModelo(Auto.class);
+        registrarModelo(Auto_Modelo.class);
+        registrarModelo(Auto_Opcion.class);
+        registrarModelo(Opciones_Activas.class);
+
     }
 }

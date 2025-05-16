@@ -4,7 +4,6 @@ import ErrorHandlin.ErrorHandler;
 import Instalador.Config;
 import Instalador.DB2Ejecutor;
 import Instalador.Install;
-import Lectura.Lector;
 import Modelo.ModeloBD;
 import Modelo.Userio;
 import com.ibm.db2.jcc.am.Connection;
@@ -263,14 +262,22 @@ public class ConexionBD {
      */
     public void inicializar() throws IOException, InterruptedException {
         Install.crearInstanciaUsuario();
-        DB2Ejecutor.instalarBases();
+
     }
     public void autoInstalar() throws IOException, InterruptedException {
         try {
             abrirConexionInstancia(Config.USER, Config.PASS, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
             cerrarConexion();
         } catch (SQLException e) {
-            inicializar();
+            Install.crearInstanciaUsuario();
+            DB2Ejecutor.instalarBases();
+        }
+        try {
+            abrirConexion("", "", "Autos");
+            cerrarConexion();
+            DB2Ejecutor.instalarBases();
+        } catch (SQLException e) {
+            DB2Ejecutor.instalarBases();
         }
     }
     public static void main(String[] args) throws SQLException, IOException {

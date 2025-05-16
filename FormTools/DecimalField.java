@@ -10,7 +10,7 @@ public class DecimalField extends JPanel {
     JComboBox<String> decimales;
     public DecimalField(){
         setLayout(new GridBagLayout());
-        enteros = (JTextField) FormHook.makeRestrictedTextField("[0-9]");
+        enteros = (JTextField) FormHook.makeRestrictedTextField("[0-9]*");
         punto = new JLabel(".");
         punto.setOpaque(false);
         decimales = makeDecimalList();

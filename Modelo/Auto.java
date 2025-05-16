@@ -7,21 +7,21 @@ import java.util.LinkedHashMap;
 public class Auto extends ModeloBD {
     private Integer id;
     private BigDecimal precio;
-    private Integer id_modelo;
+    private String modelo;
     private Date fecha_fabricacion;
     private String pais_fabricacion;
     private String estado_fabricacion;
     private String ciudad_fabricacion;
-    private Short numero_cilindros;
-    private Short numero_puertas;
-    private Short peso_kg;
-    private Short capacidad;
+    private Integer numero_cilindros;
+    private Integer numero_puertas;
+    private Integer peso_kg;
+    private Integer capacidad;
     private Boolean nuevo;
 
-    public Auto(Integer id, BigDecimal precio, Integer id_modelo, Date fecha_fabricacion, String pais_fabricacion, String estado_fabricacion, String ciudad_fabricacion, Short numero_cilindros, Short numero_puertas, Short peso_kg, Short capacidad, Boolean nuevo) {
+    public Auto(Integer id, BigDecimal precio, String modelo, Date fecha_fabricacion, String pais_fabricacion, String estado_fabricacion, String ciudad_fabricacion, Integer numero_cilindros, Integer numero_puertas, Integer peso_kg, Integer capacidad, Boolean nuevo) {
         this.id = id;
         this.precio = precio;
-        this.id_modelo = id_modelo;
+        this.modelo = modelo;
         this.fecha_fabricacion = fecha_fabricacion;
         this.pais_fabricacion = pais_fabricacion;
         this.estado_fabricacion = estado_fabricacion;
@@ -37,16 +37,16 @@ public class Auto extends ModeloBD {
         return obtenerCampoNombresDe(Auto.class);
     }
     public static String[] obtenerLabels(){
-        return new String[]{"ID", "Precio", "ID del modelo", "Fecha de fabriación", "País de fabricación", "Estado de fabricación", "Ciudad de fabricación", "Número de cilindros", "Número de puertas", "Peso (Kg)", "Capacidad", "Es nuevo?"};
+        return new String[]{"ID", "Precio", "Modelo", "Fecha de fabriación", "País de fabricación", "Estado de fabricación", "Ciudad de fabricación", "Número de cilindros", "Número de puertas", "Peso (Kg)", "Capacidad", "Es nuevo?"};
     }
     public static Class<?>[] obtenerCampoTipos(){
         return obtenerCampoTiposDe(Auto.class);
     }
     public static String[] obtenerCampoTiposSQL(){
-        return new String[]{"INT", "DECIMAL", "INT", "DATE", "VARCHAR", "VARCHAR", "VARCHAR", "SMALLINT", "SMALLINT", "SMALLINT", "SMALLINT", "BOOLEAN"};
+        return new String[]{"INT", "DECIMAL", "VARCHAR", "DATE", "VARCHAR", "VARCHAR", "VARCHAR", "SMALLINT", "SMALLINT", "SMALLINT", "SMALLINT", "BOOLEAN"};
     }
     public static Integer[] obtenerLongitudes(){
-        return new Integer[]{-1, 12, -1, -1, 32, 32, 32, -1, -1, -1, -1, -1};
+        return new Integer[]{-1, 12, 20, -1, 32, 32, 32, -1, -1, -1, -1, -1};
     }
     public static Integer[] obtenerUmbrales(){
         return new Integer[]{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -70,7 +70,7 @@ public class Auto extends ModeloBD {
         return new String[]{
                 "[0-9]*",
                 "([0-9]|.)*",
-                "[0-9]*" ,
+                "([A-Za-z]|\\s)*",
                 "",
                 "([A-Za-z]|\\s)*",
                 "([A-Za-z]|\\s)*",
@@ -86,7 +86,7 @@ public class Auto extends ModeloBD {
         return new String[]{
                 "[0-9]*",
                 "[0-9]{1,10}.[0-9]{2}",
-                "[0-9]*" ,
+                "([A-Za-z]|\\s)*",
                 "",
                 "([A-Za-z]|\\s)*",
                 "([A-Za-z]|\\s)*",
@@ -103,7 +103,7 @@ public class Auto extends ModeloBD {
     public LinkedHashMap<String, Object> getInfoImportante() {
         LinkedHashMap<String ,Object> o = new LinkedHashMap<>();
         o.put("id", id);
-        o.put("id_modelo", id_modelo);
+        o.put("modelo", modelo);
         o.put("fecha_fabricacion", fecha_fabricacion);
         o.put("pais_fabricacion", pais_fabricacion);
         o.put("numero_cilindros", numero_cilindros);
@@ -115,7 +115,7 @@ public class Auto extends ModeloBD {
         return "Auto{" +
                 "id=" + id +
                 ", precio=" + precio +
-                ", id_modelo=" + id_modelo +
+                ", modelo=" + modelo +
                 ", fecha_fabricacion=" + fecha_fabricacion +
                 ", pais_fabricacion='" + pais_fabricacion + '\'' +
                 ", estado_fabricacion='" + estado_fabricacion + '\'' +

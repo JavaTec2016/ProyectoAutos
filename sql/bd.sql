@@ -27,14 +27,13 @@ CREATE TABLE Vendedor(
 CREATE INDEX index_vendedor_nombre ON Vendedor(nombre);
 
 CREATE TABLE Auto_Modelo(
-    id INT NOT NULL PRIMARY KEY,
-    nombre VARCHAR(20) NOT NULL
+    nombre VARCHAR(20) NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE Auto(
     id INT NOT NULL PRIMARY KEY,
     precio DECIMAL(10, 2) NOT NULL,
-    id_modelo INT NOT NULL,
+    modelo VARCHAR(20) NOT NULL,
     fecha_fabricacion DATE NOT NULL,
     pais_fabricacion VARCHAR(32) NOT NULL,
     estado_fabricacion VARCHAR(32) NOT NULL,
@@ -44,11 +43,11 @@ CREATE TABLE Auto(
     peso_kg SMALLINT NOT NULL,
     capacidad SMALLINT NOT NULL,
     nuevo BOOLEAN NOT NULL,
-    FOREIGN KEY(id_modelo) REFERENCES Auto_Modelo(id)
+    FOREIGN KEY(modelo) REFERENCES Auto_Modelo(nombre)
 );
 
 CREATE INDEX index_auto_precio ON Auto(precio);
-CREATE INDEX index_id_modelo ON Auto(id_modelo);
+CREATE INDEX index_modelo ON Auto(modelo);
 CREATE INDEX index_auto_cilindros ON Auto(numero_cilindros);
 
 CREATE TABLE Auto_Opcion (
@@ -146,21 +145,19 @@ CREATE INDEX index_modelo ON Intercambio(modelo);
 CREATE VIEW autos_disponibles (
 	id_auto,
 	precio,
-	id_modelo,
 	modelo,
 	fecha_fabricacion
 ) AS
 SELECT
 	a.id,
 	a.precio,
-	a.id_modelo,
 	m.nombre,
 	a.fecha_fabricacion
 FROM
 	Auto AS a
 	INNER JOIN
 		Auto_Modelo AS m
-		ON a.id_modelo = m.id
+		ON a.modelo = m.nombre
 	WHERE (SELECT COUNT(*) FROM Venta WHERE a.id = id_auto) = 0;
 
 CREATE TABLE Cargo_Licencia(
@@ -171,22 +168,6 @@ CREATE TABLE Cargo_Licencia(
     seguro_cubierto BOOLEAN NOT NULL,
     FOREIGN KEY(id_venta) REFERENCES Venta(id)
 );
-
---#SET TERMINATOR %
-CREATE TRIGGER Opciones_Adicion BEFORE INSERT ON Venta REFERENCING NEW AS NEWLER
-FOR EACH ROW MODE DB2SQL
-BEGIN ATOMIC
-    SET precio_final = (NEWLER.precio_final * (1+adornos_monto(NEWLER.id_auto)));
-END%
-
-CREATE OR REPLACE TRIGGER auto_opcion_delete AFTER DELETE ON Auto_Opcion
-REFERENCING OLD AS OLDLER
-FOR EACH ROW MODE DB2SQL
-BEGIN ATOMIC
-	INSERT INTO Auto_Opcion_eliminado VALUES (OLDLER.id, OLDLER.id_auto, OLDLER.precio, OLDLER.opcion, NULL, CURRENT DATE);
-END%
-
---#SET TERMINATOR ;
 
 CREATE TABLE Auto_Eliminado(
     id INT NOT NULL PRIMARY KEY,
@@ -244,3 +225,20 @@ CREATE TABLE Venta_Eliminada (
     usuario_eliminador VARCHAR(32),
     fecha_eliminacion DATE NOT NULL
 );
+
+
+--#SET TERMINATOR %
+CREATE TRIGGER Opciones_Adicion BEFORE INSERT ON Venta REFERENCING NEW AS NEWLER
+FOR EACH ROW MODE DB2SQL
+BEGIN ATOMIC
+    SET precio_final = (NEWLER.precio_final * (1+adornos_monto(NEWLER.id_auto)));
+END%
+
+CREATE OR REPLACE TRIGGER auto_opcion_delete AFTER DELETE ON Auto_Opcion
+REFERENCING OLD AS OLDLER
+FOR EACH ROW MODE DB2SQL
+BEGIN ATOMIC
+	INSERT INTO Auto_Opcion_eliminado VALUES (OLDLER.id, OLDLER.id_auto, OLDLER.precio, OLDLER.opcion, NULL, CURRENT DATE);
+END%
+
+--#SET TERMINATOR ;
