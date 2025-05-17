@@ -32,7 +32,6 @@ public class Auto extends ModeloBD {
         this.capacidad = capacidad;
         this.nuevo = nuevo;
     }
-
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Auto.class);
     }

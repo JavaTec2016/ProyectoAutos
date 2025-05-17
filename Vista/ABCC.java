@@ -179,7 +179,12 @@ public class ABCC extends JPanel{
      */
     public void handlearErrorCampo(int codigo, String campoError){
         String error = errores.getMessage(campoError, codigo);
-        ErrorHandler.ejecutarHandler(codigo, error);
+        ErrorHandler.ejecutarHandler(codigo, error, campoError);
+    }
+    public void registrarHandlerForanea(String titulo){
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_UNKNOWN_FOREIGN, data->{
+            panelError(errores.getMessage(data[0].toString(), ErrorHandler.SQL_UNKNOWN_FOREIGN), titulo);
+        });
     }
     public void handlearError(int codigo, Object... args){
         ErrorHandler.ejecutarHandler(codigo, args);

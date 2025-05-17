@@ -1,5 +1,6 @@
 package FormTools;
 
+import ErrorHandlin.Call;
 import Modelo.ModeloBD;
 import Modelo.Userio;
 import Vista.Login;
@@ -853,7 +854,7 @@ public class FormHook {
      */
     public static ImageHook crearImagen(String nombre){
 
-        ImageHook i = new ImageHook("/assets/usr.png");
+        ImageHook i = new ImageHook("/assets/"+nombre+".png");
         return i;
     }
 
@@ -902,7 +903,7 @@ public class FormHook {
                 .setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15))
                 .setForeground(Color.white);
 
-        i.componente = FormHook.crearImagen("usr");
+        i.componente = FormHook.crearImagen(Userio.class.getSimpleName());
         i.componente.setOpaque(false);
 
         GridBagConstraints gp = FormHook.makeConstraint(0, -1, GridBagConstraints.NONE);
@@ -1037,14 +1038,14 @@ public class FormHook {
                         new Dimension(200, 75),
                 }
         );
-        form.whiteList("usuario", "password");
+        form.whiteList("nombre", "password");
         form.setCamposOpaque(false);
 
-        form.getLabel("usuario").setPreferredSize(new Dimension(600, 70))
+        form.getLabel("nombre").setPreferredSize(new Dimension(600, 70))
                 .setFont(new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 22));
         form.getLabel("password").setPreferredSize(new Dimension(600, 70))
                 .setFont(new Font(Font.SANS_SERIF, Font.BOLD | Font.ITALIC, 22));
-        form.getInput("usuario").setPreferredSize(new Dimension(600, 60));
+        form.getInput("nombre").setPreferredSize(new Dimension(600, 60));
         form.getInput("password").setPreferredSize(new Dimension(600, 60));
 
         PanelHook panelCentral = FormHook.makeVerticalListPanel(0);

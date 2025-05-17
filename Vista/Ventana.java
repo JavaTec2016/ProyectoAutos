@@ -1,15 +1,12 @@
 package Vista;
 
-import ErrorHandlin.ErrorHandler;
-import ErrorHandlin.Validador;
+import ErrorHandlin.Call;
+import FormTools.CampoHook;
 import FormTools.FormHook;
-import FormTools.ScrollHook;
+import FormTools.MainButtonHook;
 import FormTools.PanelHook;
-import Modelo.Cliente;
-import Modelo.ModeloBD;
-import Modelo.Userio;
+import Modelo.*;
 import conexion.ConexionBD;
-import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,22 +18,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 public class Ventana extends JFrame {
-    PanelHook ventanaPrincipal;
     Login ventanaLogin;
+    PanelPrincipal principal;
     ABCC control;
-
     CardLayout layout = null;
 
-    String tablaActual = null;
-    ArrayList<String> selecNombres = null;
-    ArrayList<String> filtroNombres = null;
-    ArrayList<Object> filtroValores = null;
-    ModeloBD registroActual = null;
-    Registro registroSeleccionado = null;
     public Ventana(){
+
         setSize(500, 500);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -45,78 +36,27 @@ public class Ventana extends JFrame {
         layout = new CardLayout();
         getContentPane().setLayout(layout);
 
-        ventanaPrincipal = new PanelHook(null);
+        setVisible(true);
 
-
-        getContentPane().setBackground(new Color(200,200,200));
-        ventanaPrincipal.getComponente().setBackground(new Color(200,200,200));
-
-
-        ScrollHook s = FormHook.crearScroll(400, 100, 900, 590, 0);
-        s.getView().appendChild("Registro1", FormHook.crearRegistroGridBag("Registro1",
-                new JComponent[]{new JLabel("Buenas")},
-                new String[]{"ID"},
-                new int[]{20},
-                20,
-                64
-        ));
-        s.getView().appendChild("Registro2", FormHook.crearRegistroGridBag("Registro2",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        s.getView().appendChild("Registro3", FormHook.crearRegistroGridBag("Registro3",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                64
-        ));
-        s.getView().appendChild("Registro4", FormHook.crearRegistroGridBag("Registro4",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        s.getView().appendChild("Registro5", FormHook.crearRegistroGridBag("Registro5",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil")},
-                new String[]{"ID", "cantidad"},
-                new int[]{10, 10},
-                20,
-                164
-        ));
-        s.getView().appendChild("Registro6", FormHook.crearRegistroGridBag("Registro6",
-                new JComponent[]{new JLabel("Malas"), new JLabel("sincomil"),  new JLabel("1"),  new JLabel("2"),  new JLabel("3"),  new JLabel("5")},
-                new String[]{"ID", "cantidad", "buenas", "GG", "A", "B"},
-                new int[]{6, 6, 6, 6, 6, 6},
-                36,
-                64
-        ));
-
-        ventanaPrincipal.appendChild("scroll", s);
-        add(ventanaPrincipal.componente, "principal");
-
-    }
-    public static HashMap<Integer, Integer> obtenerErrores(ArrayList<Object> datos, String[] regex, Integer[] longitudes, Boolean[] nonulos, Integer[] umbral){
-        HashMap<Integer, Integer> o = new HashMap<>();
-        for (int i = 0; i < datos.size(); i++) {
-            String n = null;
-            if(datos.get(i) != null) n = datos.get(i).toString();
-            int code = Validador.probarString(n, regex[i], longitudes[i], nonulos[i], umbral[i]);
-            if(code != 0) o.put(i, code);
+        try {
+            cambiarALogin();
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
-        return o;
     }
-    public void handlearError(int codigo, Object... args){
-        ErrorHandler.ejecutarHandler(codigo, args);
-    }
+
+    /**
+     * Muestra un panel de error con el mensaje y título dados
+     * @param msg Mensaje de la ventana
+     * @param titulo Título de la ventana
+     */
     public static void panelError(String msg, String titulo){
         JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
     }
-
     /**
      * Realiza una conexión a una BD con los parámetros dados
      * @param usuario usuario con el cual conectarse
@@ -138,56 +78,10 @@ public class Ventana extends JFrame {
     }
 
     /**
-     * Realiza una consulta a la BD
-     * @param tabla nombre de la tabla a consultar en la BD
-     * @param selecNombres datos a consultar en la tabla de la BD
-     * @param filtroNombres campos a filtrar en la consulta a la BD
-     * @param filtroValores valores a filtrar en la consulta a la BD
-
+     * Configura la acción de inicio de sesión de la ventana de login y abre una conexión con los datos de autenticación.
+     * Si la autenticación es exitosa, entonces muestra el panel de control configurado para el usuario.
+     * Si la autenticación falla, se relanza el error.
      */
-    public ArrayList<ModeloBD> realizarConsulta(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) {
-
-        try {
-            return DAO.d.obtenerRegistros(tabla, selecNombres, filtroNombres, filtroValores);
-        } catch (SQLException e) {
-            handlearError(e.getErrorCode(), tabla);
-            System.out.println("Error de consulta: " + e.getErrorCode());
-            e.printStackTrace();
-        }
-        return null;
-    }
-    public void agregar(ModeloBD modelo){
-        try {
-            DAO.d.agregar(modelo);
-            JOptionPane.showMessageDialog(null, "Registro agregado", "Insercion", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IllegalAccessException e) {
-            System.out.println("Error al recuperar los datos del modelo");
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            System.out.println("Error de instruccion: " + e.getErrorCode());
-            handlearError(e.getErrorCode(), modelo.getClass().getSimpleName());
-        }
-    }
-    public void modificar(ModeloBD modelo, Object[] primariasOG){
-        try {
-            DAO.d.modificar(modelo, primariasOG);
-            JOptionPane.showMessageDialog(null, "Registro modificado", "Modificacion", JOptionPane.INFORMATION_MESSAGE);
-        } catch (SQLException e) {
-            System.out.println("Error de modificacion: " +e.getErrorCode());
-            e.printStackTrace();
-        }
-    }
-    public void eliminar(ModeloBD r){
-        try {
-            DAO.d.eliminar(r);
-        } catch (SQLException e) {
-            handlearError(e.getErrorCode(), r.getClass().getSimpleName());
-        }
-    }
-    public PanelHook actualizarVentana(String id, PanelHook p){
-        add(p.componente, id);
-        return p;
-    }
     public void configurarLogin(){
         ventanaLogin.accionLogear(new ActionListener() {
             @Override
@@ -196,20 +90,32 @@ public class Ventana extends JFrame {
                 int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
                         conectar("", "", "Autos");
                 if(cod!=0) return;
-                try {
-                    control = new ABCCAuto();
-                    add(control.ventana.componente, "principal");
-                } catch (InvocationTargetException ex) {
-                    throw new RuntimeException(ex);
-                } catch (NoSuchMethodException ex) {
-                    throw new RuntimeException(ex);
-                } catch (IllegalAccessException ex) {
-                    throw new RuntimeException(ex);
-                }
-                layout.show(getContentPane(),"principal");
+
+                cambiarAPrincipal(ConexionBD.getConector().getUsr());
             }
         });
     }
+
+    /**
+     * Cambia la vista actual al panel de control
+     * @param usr Usuario activo
+     */
+    public void cambiarAPrincipal(Userio usr){
+        if(principal != null) remove(principal.componente);
+        principal = new PanelPrincipal(usr);
+        configurarbtnLogout();
+        configurarBotonesPrincipal();
+        add(principal.componente, "principal");
+        layout.show(getContentPane(), "principal");
+        revalidate();
+    }
+
+    /**
+     * Cambia la pantalla actual al login
+     * @throws InvocationTargetException Si ocurre un error al generar la pantalla de login con el modelo de usuario
+     * @throws NoSuchMethodException Si faltan métodos del usuario necesarios para crear la pantalla
+     * @throws IllegalAccessException Si la información del modelo de Usuario no es accesible
+     */
     public void cambiarALogin() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         if(ventanaLogin == null){
             ventanaLogin = FormHook.crearLogin();
@@ -219,13 +125,78 @@ public class Ventana extends JFrame {
         layout.show(getContentPane(), "login");
         revalidate();
     }
-    public void configurarbtnLogout(PanelHook v){
-        PanelHook logo = (PanelHook) v.getChild("sidebar").getChild("logout").getChild("btn");
 
-        logo.componente.addMouseListener(new MouseAdapter() {
+    /**
+     * Establece una pantalla ABCC como la actual y la muestra
+     * @param nuevo pantalla ABCC a mostrar
+     */
+    public void refrescarControl(ABCC nuevo){
+        if(control != null) remove(control.ventana.componente);
+        control = nuevo;
+        add(control.ventana.componente, "ABCC");
+        layout.show(getContentPane(), "ABCC");
+        revalidate();
+    }
+
+    /**
+     * Busca la pantalla ABCC según el nombre modelo dado y, si existe, la muestra
+     * @param tabla nombre del modelo
+     * @throws InvocationTargetException Si ocurre un error al generar la pantalla ABCC
+     * @throws NoSuchMethodException Si no existen metodos necesarios en el modelo generar la pantalla ABCC
+     * @throws IllegalAccessException Si la información del modelo no es accesible al generar la pantalla ABCC
+     */
+    public void cambiarAABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        if(tabla.equals(Userio.class.getSimpleName())){
+            refrescarControl(new ABCCUserio());
+        }else
+        if(tabla.equals(Cliente.class.getSimpleName())){
+            refrescarControl(new ABCCCliente());
+        }else
+        if(tabla.equals(Vendedor.class.getSimpleName())){
+            refrescarControl(new ABCCVendedor());
+        }else
+        if(tabla.equals(Auto_Modelo.class.getSimpleName())){
+            refrescarControl(new ABCCAuto_Modelo());
+        }else
+        if(tabla.equals(Auto.class.getSimpleName())){
+            refrescarControl(new ABCCAuto());
+        }else
+        if(tabla.equals(Auto_Opcion.class.getSimpleName())){
+            refrescarControl(new ABCCAuto_Opcion());
+        }else
+        if(tabla.equals(Opciones_Activas.class.getSimpleName())){
+            refrescarControl(new ABCCOpciones_Activas());
+        }else
+        if(tabla.equals(Venta.class.getSimpleName())){
+            refrescarControl(new ABCCVenta());
+        }
+    }
+
+    /**
+     * Itera por el mapa de los botones principales del panel de control.
+     * Establece la acción de clicado de cada uno para mostrar su respectivo ABCC, según su ID en el mapa
+     */
+    public void configurarBotonesPrincipal(){
+        principal.botonesMain.forEach((id, btn) -> btn.setMouseClick(e -> {
+            try {
+                System.out.println(id);
+                cambiarAABCC(id);
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }));
+    }
+    /**
+     * Configura la acción del boton de cierre de sesión para cerrar la conexión y cambiar la pantalla al login
+     */
+    public void configurarbtnLogout(){
+        principal.setLogoutAccion(new Call() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
+            public void run(Object... data) {
                 try {
                     ConexionBD.getConector().cerrarConexion();
                     layout.show(getContentPane(), "login");
@@ -233,20 +204,6 @@ public class Ventana extends JFrame {
                     System.out.println("Error al cerrar sesion: ");
                     ex.printStackTrace();
                 }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                logo.setBackground(Color.DARK_GRAY);
-                logo.getChild("detail").setBackground(Color.white);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                logo.setBackground(new Color(102, 102, 102));
-                logo.getChild("detail").setBackground(Color.cyan);
             }
         });
     }
@@ -259,13 +216,6 @@ public class Ventana extends JFrame {
             @Override
             public void run() {
                 Ventana v = new Ventana();
-
-                v.setVisible(true);
-                try {
-                    v.cambiarALogin();
-                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
             }
         });
     }

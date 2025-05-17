@@ -24,7 +24,6 @@ public interface Extractor {
     static Object extraerDato(JComponent campo){
 
         Class<? extends JComponent> clase = campo.getClass();
-        System.out.println("EXTRACTOR CLASE " + clase.getSimpleName().toLowerCase());
         switch (clase.getSimpleName().toLowerCase()){
             case "jtextfield":
                 String t = ((JTextField)campo).getText();

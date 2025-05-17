@@ -84,6 +84,14 @@ public class CampoHook {
     public JComponent getComponente() {
         return componente;
     }
+    public CampoHook setComponente(JComponent componente){
+        this.componente = componente;
+        return this;
+    }
+    public CampoHook setOpaque(boolean estado){
+        componente.setOpaque(estado);
+        return this;
+    }
     public CampoHook getChild(String id){
         return children.get(id);
     }
@@ -128,5 +136,14 @@ public class CampoHook {
     public void addActionListener(ActionListener a){
         if(!(componente instanceof JButton)) return;
         ((JButton) componente).addActionListener(a);
+    }
+
+    public static ArrayList<CampoHook> crearMultiLinea(String[] textos, Color color, Font fuente){
+        ArrayList<CampoHook> campos = new ArrayList<>();
+        for (String textoLinea : textos) {
+            CampoHook linea = new CampoHook(new JLabel(textoLinea)).setFont(fuente).setForeground(color);
+            campos.add(linea);
+        }
+        return campos;
     }
 }

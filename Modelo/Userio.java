@@ -1,19 +1,24 @@
 package Modelo;
 
 public class Userio extends ModeloBD {
-    String usuario;
+    String nombre;
     String password;
     Boolean lectura;
     Boolean escritura;
     Boolean admin;
 
-    public Userio(String usuario, String password, Boolean lectura, Boolean escritura, Boolean admin) {
-        this.usuario = usuario;
+    public Userio(String nombre, String password, Boolean lectura, Boolean escritura, Boolean admin) {
+        this.nombre = nombre;
         this.password = password;
         this.lectura = lectura;
         this.escritura = escritura;
         this.admin = admin;
     }
+
+    public String getNombre() {
+        return nombre;
+    }
+
     public static String[] obtenerCamposNombres(){
         return obtenerCampoNombresDe(Userio.class);
     }
@@ -60,7 +65,7 @@ public class Userio extends ModeloBD {
     @Override
     public String toString() {
         return "Usuario{" +
-                "usuario='" + usuario + '\'' +
+                "usuario='" + nombre + '\'' +
                 ", password='" + password + '\'' +
                 ", lectura=" + lectura +
                 ", escritura=" + escritura +

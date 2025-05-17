@@ -73,9 +73,6 @@ public class ConexionBD {
             p.put("user", usuario);
             p.put("password", contra);
             String url = "jdbc:db2://127.0.0.1:"+puerto+"/"+BD;
-            System.out.println(url);
-            System.out.println(usuario);
-            System.out.println(contra);
             conexion = (Connection) DriverManager.getConnection(url, p);
 
             if(conexion != null && !conexion.isClosed()){
@@ -270,12 +267,10 @@ public class ConexionBD {
             cerrarConexion();
         } catch (SQLException e) {
             Install.crearInstanciaUsuario();
-            DB2Ejecutor.instalarBases();
         }
         try {
             abrirConexion("", "", "Autos");
             cerrarConexion();
-            DB2Ejecutor.instalarBases();
         } catch (SQLException e) {
             DB2Ejecutor.instalarBases();
         }

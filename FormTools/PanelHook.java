@@ -1,6 +1,7 @@
 package FormTools;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 
 public class PanelHook extends CampoHook {
@@ -21,6 +22,12 @@ public class PanelHook extends CampoHook {
         componente.setLayout(l);
         layout = l;
 
+    }
+    public PanelHook setComponente(JComponent componente){
+        return (PanelHook)super.setComponente(componente);
+    }
+    public PanelHook setOpaque(boolean estado){
+        return (PanelHook)super.setOpaque(estado);
     }
     public PanelHook setPreferredSize(Dimension d){
         return (PanelHook)super.setPreferredSize(d);
@@ -61,6 +68,10 @@ public class PanelHook extends CampoHook {
     }
     public PanelHook setBounds(int x, int y, int w, int h){
         componente.setBounds(x,y,w,h);
+        return this;
+    }
+    public PanelHook setLineBorder(Color color, int grosor, boolean esquinaRedondeo){
+        componente.setBorder(new LineBorder(color, grosor, esquinaRedondeo));
         return this;
     }
 }
