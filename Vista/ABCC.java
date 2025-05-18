@@ -252,7 +252,7 @@ public class ABCC extends JPanel{
                 filtroNombres = new ArrayList<>(List.of(nombres));
                 filtroValores = datos;
 
-                System.out.println(filtroValores);
+                //System.out.println(filtroValores);
                 actualizarTablaABCCThreadLike(selecNombres, filtroNombres, filtroValores);
 
             }
@@ -552,7 +552,6 @@ public class ABCC extends JPanel{
             @Override
             public void run() {
                 ArrayList<ModeloBD> m = realizarConsultaLike(tabla, finalSn, finalFn, finalFv);
-                //System.out.println(m.size());
 
                 FormHook.limpiarTabla(scroll);
                 FormHook.rellenarTabla(scroll, m);

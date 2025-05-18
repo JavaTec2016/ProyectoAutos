@@ -1238,6 +1238,10 @@ public class FormHook {
      */
     public static void limpiarTabla(ScrollHook tabla){
         tabla.getView().removeChildren();
+        tabla.getComponente().revalidate();
+        tabla.getView().componente.revalidate();
+        tabla.getView().componente.repaint();
+
     }
 
     /**
@@ -1276,6 +1280,8 @@ public class FormHook {
             });
         }
         tabla.getComponente().revalidate();
+        tabla.getView().componente.revalidate();
+        tabla.getView().componente.repaint();
     }
     /**
      * Elimina los campos cuyos nombres no coincidan con los nombres dados
