@@ -38,6 +38,11 @@ public class PanelHook extends CampoHook {
         return (PanelHook) super.setMaximumSize(d);
     }
 
+    @Override
+    public PanelHook setMinimumSize(Dimension d) {
+        return (PanelHook) super.setMinimumSize(d);
+    }
+
     public PanelHook setSize(Dimension d){
         return (PanelHook) super.setSize(d);
     }

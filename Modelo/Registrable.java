@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 
 public interface Registrable {
     Object[] obtenerDatos() throws IllegalAccessException;
-
+    String getDisplay();
     static String[] obtenerCampoNombres() { return null; }
     static Class<?>[] obtenerCampoTipos(){ return null; }
     static String[] obtenerCampoTiposSQL(){ return null; }
@@ -19,5 +19,6 @@ public interface Registrable {
     static Integer[] obtenerPrimarias(){ return null; }
     static Integer[] obtenerForaneas(){ return null; }
     LinkedHashMap<String, Object> getInfoImportante() throws IllegalAccessException;
+    LinkedHashMap<String, Object> toHashMap() throws IllegalAccessException;
 
 }

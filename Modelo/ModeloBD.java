@@ -26,6 +26,7 @@ public abstract class ModeloBD implements Registrable {
         return o;
     }
     public static Class<? extends ModeloBD> getModelo(String n){
+        if(!modelos.containsKey(n)) System.err.println("MODELO: el modelo '"+n+"' no fue encontrado");
         return modelos.get(n);
     }
     @Override
@@ -40,7 +41,6 @@ public abstract class ModeloBD implements Registrable {
         }
         return o;
     }
-
     public static String[] obtenerCampoNombresDe(Class<? extends Registrable> c){
         Field[] f = c.getDeclaredFields();
         String[] s = new String[f.length];
@@ -51,6 +51,18 @@ public abstract class ModeloBD implements Registrable {
             i++;
         }
         return s;
+    }
+    public String getDisplay(){return null;};
+    public LinkedHashMap<String, Object> toHashMap() throws IllegalAccessException {
+        String[] noms = obtenerCamposNombresDe(getClass().getSimpleName());
+        Object[] vals = obtenerDatos();
+        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
+        int i = 0;
+        for (String nom : noms) {
+            out.put(nom, vals[i]);
+            i++;
+        }
+        return out;
     }
     public  static String[] obtenerCamposNombresDe(String modelo){
         return obtenerCampoNombresDe(getModelo(modelo));
@@ -167,6 +179,31 @@ public abstract class ModeloBD implements Registrable {
         registrarModelo(Auto_Modelo.class);
         registrarModelo(Auto_Opcion.class);
         registrarModelo(Opciones_Activas.class);
+        registrarModelo(Venta.class);
+    }
+    public static String formatearMensajeErrorForaneas(String modelo){
+        try {
+            Integer[] foraneas = obtenerForaneasDe(modelo);
+            String[] labels = obtenerLabelsDe(modelo);
+            StringBuilder msg = new StringBuilder();
+            int i = 0;
+            Integer idx = foraneas[i];
 
+            if(foraneas.length == 1) return labels[idx];
+
+            for (; i < foraneas.length-1; i++) {
+                idx = foraneas[i];
+                msg.append(labels[idx]).append(", ");
+            }
+            msg.setLength(msg.length()-2);
+            msg.append(" o ").append(labels[idx]);
+            return msg.toString();
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

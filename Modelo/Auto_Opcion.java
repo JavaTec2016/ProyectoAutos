@@ -37,7 +37,7 @@ public class Auto_Opcion extends ModeloBD {
         return new Boolean[]{true, true, true, true};
     }
     public static String[] obtenerCamposComponentes(){
-        return new String[]{"textfield", "textfield", "decimalfield", "textfield"};
+        return new String[]{"textfield", "listhook", "decimalfield", "textfield"};
     }
     public static String[][] obtenerEspeciales(){
         return new String[][]{new String[]{""},new String[]{""},new String[]{""},new String[]{""}};

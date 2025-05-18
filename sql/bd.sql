@@ -33,6 +33,7 @@ CREATE TABLE Auto_Modelo(
 CREATE TABLE Auto(
     id INT NOT NULL PRIMARY KEY,
     precio DECIMAL(10, 2) NOT NULL,
+    color VARCHAR(32) NOT NULL,
     modelo VARCHAR(20) NOT NULL,
     fecha_fabricacion DATE NOT NULL,
     pais_fabricacion VARCHAR(32) NOT NULL,
@@ -68,7 +69,7 @@ CREATE TABLE Cliente_Adorno (
     FOREIGN KEY(id_cliente) REFERENCES Cliente(id),
     FOREIGN KEY(id_opcion) REFERENCES Auto_Opcion(id)
 );
-CREATE INDEX index_id_cliente ON Cliente_Adorno(id_cliente);
+CREATE INDEX index_id_adorno_cliente ON Cliente_Adorno(id_cliente);
 CREATE INDEX index_id_opcion ON Cliente_Adorno(id_opcion);
 
 CREATE VIEW Opciones_Activas (
@@ -99,7 +100,7 @@ LANGUAGE SQL
 READS SQL DATA
 BEGIN
 	DECLARE total DECIMAL(10, 2);
-	SELECT SUM(precio) INTO total FROM Opciones_Activas WHERE id_auto = id_auto_objetivo;
+	SELECT IFNULL(SUM(precio), 0) INTO total FROM Opciones_Activas WHERE id_auto = id_auto_objetivo;
 	RETURN total;
 END%
 --#SET TERMINATOR ;
@@ -123,13 +124,13 @@ CREATE TABLE Venta (
 
 CREATE INDEX index_id_cliente ON Venta(id_cliente);
 CREATE INDEX index_id_vendedor ON Venta(id_vendedor);
-CREATE INDEX index_garantia_tipo ON Venta(id_vendedor);
+CREATE INDEX index_garantia_tipo ON Venta(garantia_tipo);
 
 CREATE TABLE Intercambio (
     id INT NOT NULL PRIMARY KEY,
     id_venta INT NOT NULL,
     marca VARCHAR(32) NOT NULL,
-    modelo VARCHAR(32) NOT NULL,
+    modelo VARCHAR(20) NOT NULL,
     anio SMALLINT NOT NULL,
     valor_estimado DECIMAL(10,2),
     FOREIGN KEY(id_venta) REFERENCES Venta(id)
@@ -140,7 +141,7 @@ CREATE TABLE Intercambio (
 
 CREATE INDEX index_id_venta ON Intercambio(id_venta);
 CREATE INDEX index_marca ON Intercambio(marca);
-CREATE INDEX index_modelo ON Intercambio(modelo);
+CREATE INDEX index_intercambio_modelo ON Intercambio(modelo);
 
 CREATE VIEW autos_disponibles (
 	id_auto,
@@ -172,7 +173,8 @@ CREATE TABLE Cargo_Licencia(
 CREATE TABLE Auto_Eliminado(
     id INT NOT NULL PRIMARY KEY,
     precio DECIMAL(10, 2) NOT NULL,
-    id_modelo INT NOT NULL,
+    color VARCHAR(32) NOT NULL,
+    modelo VARCHAR(20) NOT NULL,
     fecha_fabricacion DATE NOT NULL,
     pais_fabricacion VARCHAR(32) NOT NULL,
     estado_fabricacion VARCHAR(32) NOT NULL,
@@ -199,11 +201,13 @@ CREATE TABLE Cliente_Eliminado(
     id INT NOT NULL PRIMARY KEY,
     nombre VARCHAR(32) NOT NULL,
     apellido VARCHAR(32) NOT NULL,
-    telefono VARCHAR(10) NOT NULL,
-    ciudad VARCHAR(50) NOT NULL,
-    calle VARCHAR(50) NOT NULL,
-    num_domicilio VARCHAR(10) NOT NULL,
-    email VARCHAR(50) NOT NULL,
+    telefono VARCHAR(10),
+    ciudad VARCHAR(50),
+    calle VARCHAR(50),
+    num_domicilio VARCHAR(10),
+    email VARCHAR(50),
+    fuente_referencia VARCHAR(32),
+    es_potencial BOOLEAN NOT NULL,
     usuario_eliminador VARCHAR(32),
     fecha_eliminacion DATE NOT NULL
 ) PARTITION BY RANGE(fecha_eliminacion)(
@@ -228,10 +232,10 @@ CREATE TABLE Venta_Eliminada (
 
 
 --#SET TERMINATOR %
-CREATE TRIGGER Opciones_Adicion BEFORE INSERT ON Venta REFERENCING NEW AS NEWLER
+CREATE OR REPLACE TRIGGER Opciones_Adicion BEFORE INSERT ON Venta REFERENCING NEW AS NEWLER
 FOR EACH ROW MODE DB2SQL
 BEGIN ATOMIC
-    SET precio_final = (NEWLER.precio_final * (1+adornos_monto(NEWLER.id_auto)));
+    SET NEWLER.precio_final = NEWLER.precio_final + adornos_monto(NEWLER.id_auto);
 END%
 
 CREATE OR REPLACE TRIGGER auto_opcion_delete AFTER DELETE ON Auto_Opcion

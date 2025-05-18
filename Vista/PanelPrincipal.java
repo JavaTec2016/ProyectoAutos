@@ -24,6 +24,7 @@ public class PanelPrincipal extends PanelHook {
 
     PanelHook btnLogout;
     Call logoutAccion;
+    CampoHook backButton;
 
     LinkedHashMap<String, MainButtonHook> botonesMain;
 
@@ -64,7 +65,6 @@ public class PanelPrincipal extends PanelHook {
         btnLogout = (PanelHook) childPath("panelUser/logout/btn");
 
         setLogoutListener();
-
         iniciarOpcionesMain();
     }
 
@@ -78,11 +78,11 @@ public class PanelPrincipal extends PanelHook {
      * @return El {@link MainButtonHook} recién agregado al panel
      */
     public MainButtonHook addOpcion(String id, int columna, int fila, String[] lineasTexto){
-        MainButtonHook btn = new MainButtonHook(lineasTexto, id, new Dimension(160, 150), Color.white, Color.black, 0.6);
+        MainButtonHook btn = new MainButtonHook(lineasTexto, id, new Dimension(180, 170), Color.white, Color.black, 0.6);
         btn.setTextosFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.separator.setBackground(btn.getForeground());
         GridBagConstraints constraints = FormHook.makeConstraint(columna, fila, 0, 0, GridBagConstraints.NONE);
-        constraints.insets = new Insets(20, 20, 20, 20);
+        constraints.insets = new Insets(30, 30, 30, 30);
         panelTablas.appendChild(id, btn, constraints);
 
         return btn;

@@ -36,6 +36,9 @@ public interface Extractor {
             case "jcombobox":
                 return ((JComboBox)campo).getSelectedItem();
 
+            case "listhook":
+                return ((ListHook)campo).getSelectedKey();
+
             case "jcheckbox":
                 return ((JCheckBox)campo).isSelected();
 
@@ -93,23 +96,36 @@ public interface Extractor {
         if(comp instanceof JTextField){
             ((JTextField) comp).setText(dato.toString());
         }
+        else if (comp instanceof ListHook<?,?>){
+            ((ListHook<?, ?>) comp).setSelectedKey(dato);
+        }
         else if(comp instanceof JComboBox<?>){
-            ((JComboBox<?>) comp).setSelectedIndex((Integer) dato);
+            ((JComboBox<?>) comp).setSelectedItem(dato);
         }
         else if(comp instanceof JCheckBox){
             ((JCheckBox) comp).setSelected((Boolean) dato);
         }
         else if(comp instanceof JDatePicker){
-            Calendar.getInstance().setTime((java.sql.Date) dato);
+            java.sql.Date fecha = java.sql.Date.valueOf(dato.toString());
             Calendar c = Calendar.getInstance();
-            ((JDatePicker) comp).getModel().setDate(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            c.setTime(fecha);
+
+            setJDatePickerValue(c, (JDatePicker) comp);
         }
         else if(comp instanceof DecimalField){
             if(dato.toString().contains(".")) ((DecimalField) comp).setDecimal(dato.toString());
             else{
                 System.out.println("EXTRACTOR Decimal invalido: " + dato.toString());
             }
+        }else {
+            System.out.println("EXTRACTOR COLOCAR DESCONOCIDO: " + comp);
         }
+    }
+    static void setJDatePickerValue(Calendar calendar, JDatePicker picker){
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        picker.getModel().setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        picker.getFormattedTextField().setValue(calendar);
     }
     static boolean probarExpresion(String dato, String regex){
         Pattern patron = Pattern.compile(regex);

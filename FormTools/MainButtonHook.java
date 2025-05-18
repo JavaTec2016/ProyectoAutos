@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 public class MainButtonHook extends PanelHook {
@@ -33,7 +34,7 @@ public class MainButtonHook extends PanelHook {
         GridBagConstraints constraint = FormHook.makeConstraint(0, -1, 1F, (float) (imagenRatio-0.05), GridBagConstraints.BOTH);
         constraint.insets = new Insets(0,10,0,10);
 
-        appendChild("img", img, FormHook.makeConstraint(0, -1, 0.7f, 0.8f, GridBagConstraints.BOTH));
+        appendChild("img", img, FormHook.makeConstraint(0, -1, 0f, 0.7f, GridBagConstraints.VERTICAL));
         constraint.weightx = 0.85;
         constraint.weighty = 0;
         appendChild("separator", separator, constraint);
@@ -138,23 +139,27 @@ public class MainButtonHook extends PanelHook {
     }
 
     public void iniciarListener(){
+        for (MouseListener mouseListener : componente.getMouseListeners()) {
+            componente.removeMouseListener(mouseListener);
+        }
         componente.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                mouseClick.run(e);
                 super.mouseClicked(e);
+                mouseClick.run(e);
+
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                mouseEnter.run(e);
                 super.mouseEntered(e);
+                mouseEnter.run(e);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                mouseExit.run(e);
                 super.mouseExited(e);
+                mouseExit.run(e);
             }
         });
     }

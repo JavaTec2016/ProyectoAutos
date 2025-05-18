@@ -83,4 +83,21 @@ public class Vendedor extends ModeloBD {
                 ", telefono='" + telefono + '\'' +
                 '}';
     }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    @Override
+    public String getDisplay() {
+        return "ID: " + id + ", " + nombre + " " + apellido;
+    }
 }

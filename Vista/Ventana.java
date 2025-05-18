@@ -5,6 +5,7 @@ import FormTools.CampoHook;
 import FormTools.FormHook;
 import FormTools.MainButtonHook;
 import FormTools.PanelHook;
+import Instalador.DB2Ejecutor;
 import Modelo.*;
 import conexion.ConexionBD;
 
@@ -133,6 +134,9 @@ public class Ventana extends JFrame {
     public void refrescarControl(ABCC nuevo){
         if(control != null) remove(control.ventana.componente);
         control = nuevo;
+        control.setBackAccion(e -> {
+            cambiarAPrincipal(ConexionBD.getConector().getUsr());
+        });
         add(control.ventana.componente, "ABCC");
         layout.show(getContentPane(), "ABCC");
         revalidate();
@@ -179,7 +183,6 @@ public class Ventana extends JFrame {
     public void configurarBotonesPrincipal(){
         principal.botonesMain.forEach((id, btn) -> btn.setMouseClick(e -> {
             try {
-                System.out.println(id);
                 cambiarAABCC(id);
             } catch (InvocationTargetException ex) {
                 throw new RuntimeException(ex);
@@ -210,8 +213,8 @@ public class Ventana extends JFrame {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ConexionBD.getConector().autoInstalar();
-        ModeloBD.registrarModelos();
 
+        ModeloBD.registrarModelos();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

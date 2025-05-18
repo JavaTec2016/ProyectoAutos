@@ -118,4 +118,21 @@ public class Cliente extends ModeloBD {
                 ", es_potencial=" + es_potencial +
                 '}';
     }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    @Override
+    public String getDisplay() {
+        return "ID: " + id + ", " + nombre + " " + apellido;
+    }
 }

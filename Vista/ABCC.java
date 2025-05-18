@@ -4,15 +4,13 @@ import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
 import ErrorHandlin.ErrorMessageList;
 import ErrorHandlin.Validador;
-import FormTools.CampoHook;
-import FormTools.FormHook;
-import FormTools.PanelHook;
-import FormTools.ScrollHook;
+import FormTools.*;
 import Modelo.ModeloBD;
 import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,8 +27,11 @@ public class ABCC extends JPanel{
     Registro registroSeleccionado = null;
 
     PanelHook ventana;
+    PanelHook panelOpciones;
     PanelHook formulario;
     CampoHook btnAgregar;
+    CampoHook btnBack;
+    CampoHook titulo;
     ScrollHook scroll;
     String tabla;
 
@@ -43,6 +44,8 @@ public class ABCC extends JPanel{
         formulario = (PanelHook) ventana.getChild("sidebar");
         errores = new ErrorMessageList(formulario.form);
         scroll = (ScrollHook)ventana.childPath("main/tableHolder/tabla");
+        panelOpciones = (PanelHook) ventana.childPath("main/topbar");
+        titulo = formulario.childPath("header/title");
         btnAgregar = ventana.childPath("sidebar/foot/btnAgregar");
 
         configurarAgregar();
@@ -50,10 +53,25 @@ public class ABCC extends JPanel{
         registrarHandlersValidacion();
         registrarHandlersSQL();
 
+        crearBackButton();
         actualizarTablaABCCThread(selecNombres, filtroNombres, filtroValores);
         add(ventana.componente);
     }
-
+    public ListHook<?,?> getListHook(String campoNombre){
+        return (ListHook<Object, Object>)(formulario.form.getInput(campoNombre).componente);
+    }
+    public JComboBox<?> getComboBox(String campoNombre){
+        return (JComboBox<Object>)(formulario.form.getInput(campoNombre).componente);
+    }
+    public void crearBackButton(){
+        CampoHook btn = FormHook.makeFormBoton("REGRESAR", Color.BLUE, Color.white);
+        btn.setPreferredSize(new Dimension(200, 50));
+        panelOpciones.appendChild("btnBack", btn, FormHook.makeConstraint(0, 0, 0, 0, GridBagConstraints.NONE));
+        btnBack = btn;
+    }
+    public void setBackAccion(ActionListener listener){
+        btnBack.addActionListener(listener);
+    }
     /**
      * Configura la acción del botón agregar
      */
@@ -223,6 +241,7 @@ public class ABCC extends JPanel{
         } catch (SQLException e) {
             System.out.println("Error de instruccion: " + e.getErrorCode());
             handlearError(e.getErrorCode(), modelo.getClass().getSimpleName());
+            e.printStackTrace();
         }
     }
 

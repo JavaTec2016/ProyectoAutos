@@ -154,6 +154,13 @@ public class FormHook {
             }
         });
     }
+    public CampoHook getCampo(String nombre){
+        return campos.get(nombre);
+    }
+    public void setInput(String nombre, CampoHook input){
+        getCampo(nombre).removeChild("input");
+        getCampo(nombre).appendChild("input", input);
+    }
     public CampoHook getLabel(String campo){
         return campos.get(campo).getChild("label");
     }
@@ -182,6 +189,22 @@ public class FormHook {
             @Override
             public void accept(String s, CampoHook campoHook) {
                 campoHook.getChild("input").setPreferredSize(d);
+            }
+        });
+    }
+    public void setLabelsMinimumSize(Dimension d){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                campoHook.getChild("label").setMinimumSize(d);
+            }
+        });
+    }
+    public void setInputsMinimumSize(Dimension d){
+        campos.forEach(new BiConsumer<String, CampoHook>() {
+            @Override
+            public void accept(String s, CampoHook campoHook) {
+                campoHook.getChild("input").setMinimumSize(d);
             }
         });
     }
@@ -231,7 +254,6 @@ public class FormHook {
         try {
             CampoHook input = new CampoHook(obtenerComponente(tipoComponentes.get(nombre), exps.get(nombre)));
             CampoHook label = new CampoHook(new JLabel(labels.get(nombre)));
-
             if(input.componente instanceof JCheckBox){
                 ((JCheckBox) input.componente).setText(labels.get(nombre));
                 input.setForeground(Color.white);
@@ -460,6 +482,7 @@ public class FormHook {
             case "datefield": return new JDatePicker();
             case "combobox": return  new JComboBox<>();
             case "checkbox": return new JCheckBox();
+            case "listhook": return new ListHook<Object, Object>();
         }
         System.out.println("Tipo de comp desconocido: " + tipo);
         return null;
@@ -969,10 +992,11 @@ public class FormHook {
         f.attachBotonesEnSeccion("foot");
         f.setLabelsSize(new Dimension(300, 20));
         f.setInputsSize(new Dimension(300, 20));
+        f.setLabelsMinimumSize(new Dimension(300, 15));
+        f.setInputsMinimumSize(new Dimension(300, 20));
         f.setLabelsColor(Color.white);
         f.setCamposOpaque(false);
         f.attachCamposEn(form, gf);
-        form.componente.revalidate();
         ///FOOT (nomas botones
 
         CampoHook btnAgregar = FormHook.makeFormBoton("AGREGAR", Color.GRAY, Color.CYAN);

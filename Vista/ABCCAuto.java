@@ -1,9 +1,16 @@
 package Vista;
 
 import ErrorHandlin.ErrorHandler;
+import FormTools.ComboHook;
 import Modelo.Auto;
+import Modelo.Auto_Modelo;
+import Modelo.ModeloBD;
 
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class ABCCAuto extends ABCC{
     public ABCCAuto() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -16,5 +23,13 @@ public class ABCCAuto extends ABCC{
         ErrorHandler.registrarHandler(ErrorHandler.SQL_UNKNOWN_FOREIGN, data -> {
             Ventana.panelError("El modelo de auto no existe en la base de datos", "Modelo desconocido");
         });
+
+        JComboBox<String> modelos = (JComboBox<String>) getComboBox("modelo");
+        ArrayList<ModeloBD> modeloOpciones = realizarConsulta(Auto_Modelo.class.getSimpleName(), null, null, null);
+        modelos.addItem(null);
+        modeloOpciones.forEach(modeloBD -> {
+            modelos.addItem(((Auto_Modelo)modeloBD).getNombre());
+        });
+
     }
 }

@@ -103,8 +103,8 @@ public class ConexionBD {
     public int probarCredenciales(String usuario, String pass, String puerto){
         try {
             abrirConexionInstancia(usuario, pass, "Usuario", puerto);
-            DAO.d.consultar("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
-            boolean st = DAO.d.getRs().next();
+            ResultSet rs = DAO.d.consultar("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
+            boolean st = rs.next();
 
             cerrarConexion();
             if(st) return ErrorHandler.OK;
@@ -218,6 +218,7 @@ public class ConexionBD {
      */
     public void colocarPrepared(int idx, Object dato) throws SQLException {
         if(dato == null) {
+            System.out.println("CONEXION PREPARED NULO " + idx);
             st.setObject(idx, null);
             return;
         };
@@ -227,12 +228,15 @@ public class ConexionBD {
             case "Byte": st.setByte(idx, (Byte)dato); break;
             case "String": st.setString(idx, (String)dato); break;
             case "Date": st.setDate(idx, (Date)dato); break;
-            case "BigDecimal": st.setBigDecimal(idx, (BigDecimal)dato); break;
+            case "BigDecimal":
+                System.out.println("COLOCA EN POS: " + idx + ": " + dato);
+                st.setBigDecimal(idx, (BigDecimal)dato); break;
             case "Float": st.setFloat(idx, (Float)dato); break;
             case "Double": st.setDouble(idx, (Double) dato); break;
             case "Boolean": st.setBoolean(idx, (Boolean)dato); break;
             default:
                 System.out.println("PREPARED STATEMENT Tipo de dato desconocido: " + dato.getClass().getSimpleName());
+                st.setObject(idx, dato);
                 break;
         }
     }

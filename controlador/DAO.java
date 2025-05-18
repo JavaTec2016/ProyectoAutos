@@ -4,6 +4,7 @@ import Modelo.ModeloBD;
 import Modelo.Registrable;
 import conexion.ConexionBD;
 
+import javax.xml.transform.Result;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -33,6 +34,7 @@ public class DAO {
         Object[] datos = r.obtenerDatos();
 
         conexion.prepararStatement(sql, datos);
+        System.out.println(sql + " :: " + Arrays.toString(datos));
         conexion.ejecutarDML();
     }
     public ResultSet consultar(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
@@ -62,18 +64,16 @@ public class DAO {
         }
 
         conexion.prepararStatement(sql, val);
-        rs = conexion.ejecutarSQL();
-        return rs;
+        return conexion.ejecutarSQL();
     }
     public ArrayList<ModeloBD> obtenerRegistros(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
-        consultar(tabla, selecNombres, filtroNombres, filtroValores);
+        ResultSet rs = consultar(tabla, selecNombres, filtroNombres, filtroValores);
         Object[] datos = new Object[rs.getMetaData().getColumnCount()];
         ArrayList<ModeloBD> modelos = new ArrayList<>();
 
         while (rs.next()){
             for (int i = 0; i < datos.length; i++) {
                 datos[i] = rs.getObject(i+1);
-                System.out.println("DAO DATO: " + datos[i] + " :: " + datos[i].getClass().getSimpleName());
             }
             modelos.add(ModeloBD.instanciar(tabla, datos));
         }

@@ -63,4 +63,8 @@ public class Auto_Modelo extends ModeloBD {
                 ", nombre='" + nombre + '\'' +
                 '}';
     }
+
+    public String getNombre() {
+        return nombre;
+    }
 }
