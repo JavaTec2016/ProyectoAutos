@@ -43,12 +43,17 @@ public class DecimalField extends JPanel {
      */
     public BigDecimal getDecimal(){
         String enterosText = enteros.getText();
-        if(enterosText.isEmpty()) enterosText = "0";
+        if(enterosText.isEmpty()) return null;
         String decimalText = decimales.getSelectedItem().toString();
         return new BigDecimal(enterosText+"."+decimalText);
 
     }
     public void setDecimal(String decimal){
+        if(decimal == null){
+            enteros.setText("");
+            decimales.setSelectedIndex(0);
+            return;
+        }
         String[] partes = decimal.split("\\.");
         enteros.setText(partes[0]);
         decimales.setSelectedItem(partes[1]);

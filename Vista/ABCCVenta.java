@@ -20,36 +20,13 @@ public class ABCCVenta extends ABCC {
         ErrorHandler.registrarHandler(ErrorHandler.SQL_UNKNOWN_FOREIGN, data -> {
             Ventana.panelError("Algunos de los campos no fueron encontrados: " + ModeloBD.formatearMensajeErrorForaneas(tabla), "Opción duplicado");
         });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_FOREIGN_RElATION, data -> {
+            panelError("Imposible eliminar: Esta venta está asociada a un intercambio", "Error de eliminación");
+        });
 
-        clienteOpciones();
-        vendedorOpciones();
-        autoOpciones();
+        listHookOciones("id_cliente", Cliente.class.getSimpleName(), "Opciones...");
+        listHookOciones("id_vendedor", Vendedor.class.getSimpleName(), "Opciones...");
+        listHookOciones("id_auto", Auto.class.getSimpleName(), "Opciones...");
     }
-    private void clienteOpciones(){
-        ListHook<Integer, String> lista = (ListHook<Integer, String>) getListHook("id_cliente");
-        ArrayList<ModeloBD> registros = realizarConsulta(Cliente.class.getSimpleName(), null, null, null);
-        lista.addItem(null, "Opciones...");
-        registros.forEach(modeloBD -> {
-            Cliente cliente = (Cliente)modeloBD;
-            lista.addItem(cliente.getId(), cliente.getDisplay());
-        });
-    }
-    private void vendedorOpciones(){
-        ListHook<Integer, String> lista = (ListHook<Integer, String>) getListHook("id_vendedor");
-        ArrayList<ModeloBD> registros = realizarConsulta(Vendedor.class.getSimpleName(), null, null, null);
-        lista.addItem(null, "Opciones...");
-        registros.forEach(modeloBD -> {
-            Vendedor vendedor = (Vendedor)modeloBD;
-            lista.addItem(vendedor.getId(), vendedor.getDisplay());
-        });
-    }
-    private void autoOpciones(){
-        ListHook<Integer, String> lista = (ListHook<Integer, String>) getListHook("id_auto");
-        ArrayList<ModeloBD> registros = realizarConsulta(Auto.class.getSimpleName(), null, null, null);
-        lista.addItem(null, "Opciones...");
-        registros.forEach(modeloBD -> {
-            Auto auto = (Auto)modeloBD;
-            lista.addItem(auto.getId(), auto.getDisplay());
-        });
-    }
+
 }

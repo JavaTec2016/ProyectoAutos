@@ -6,6 +6,7 @@ import ErrorHandlin.ErrorMessageList;
 import ErrorHandlin.Validador;
 import FormTools.*;
 import Modelo.ModeloBD;
+import conexion.ConexionBD;
 import controlador.DAO;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class ABCC extends JPanel{
     ArrayList<String> selecNombres = null;
@@ -29,8 +31,14 @@ public class ABCC extends JPanel{
     PanelHook ventana;
     PanelHook panelOpciones;
     PanelHook formulario;
+
     CampoHook btnAgregar;
+    CampoHook btnLimpiar;
     CampoHook btnBack;
+    CampoHook btnCommit;
+    CampoHook btnRollback;
+    CampoHook checkConsulta;
+
     CampoHook titulo;
     ScrollHook scroll;
     String tabla;
@@ -53,22 +61,151 @@ public class ABCC extends JPanel{
         registrarHandlersValidacion();
         registrarHandlersSQL();
 
-        crearBackButton();
+        configurarPanelOpciones();
+        setLimpiarAccion();
+        setCommitAccion();
+        setRollbackAccion();
+
+        activarAutoFiltrado();
+
         actualizarTablaABCCThread(selecNombres, filtroNombres, filtroValores);
         add(ventana.componente);
     }
+    /**
+     * Obtiene el {@link ListHook} de un campo del formulario
+     * @param campoNombre nombre del campo
+     */
     public ListHook<?,?> getListHook(String campoNombre){
         return (ListHook<Object, Object>)(formulario.form.getInput(campoNombre).componente);
     }
+
+    /**
+     * Obtiene el {@link JComboBox} de un campo del formulario
+     * @param campoNombre nombre del campo
+     */
     public JComboBox<?> getComboBox(String campoNombre){
         return (JComboBox<Object>)(formulario.form.getInput(campoNombre).componente);
     }
+    /**
+     * Crea el botón de regreso de la pantalla ABCC
+     */
     public void crearBackButton(){
         CampoHook btn = FormHook.makeFormBoton("REGRESAR", Color.BLUE, Color.white);
         btn.setPreferredSize(new Dimension(200, 50));
-        panelOpciones.appendChild("btnBack", btn, FormHook.makeConstraint(0, 0, 0, 0, GridBagConstraints.NONE));
         btnBack = btn;
     }
+    /**
+     * Crea el botón de commit de la base de datos
+     */
+    public void crearCommitButton(){
+        CampoHook btn = FormHook.makeFormBoton("GUARDAR CAMBIOS", Color.WHITE, Color.BLUE);
+        btn.setPreferredSize(new Dimension(250, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnCommit = btn;
+    }
+    /**
+     * Crea el botón de rollback de la base de datos
+     */
+    public void crearRollbackButton(){
+        CampoHook btn = FormHook.makeFormBoton("DESCARTAR CAMBIOS", Color.RED, Color.WHITE);
+        btn.setPreferredSize(new Dimension(250, 50));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnRollback = btn;
+    }
+    /**
+     * Crea la opción de filtrado automático de resultados
+     */
+    public void crearConsultaCheck(){
+        CampoHook check = new CampoHook(new JCheckBox("filtrado automático"));
+        check.setPreferredSize(new Dimension(250, 50));
+        check.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        checkConsulta = check;
+    }
+
+    /**
+     * Crea el botón de limpieza del formulario
+     */
+    public void crearLimpiarButton(){
+        CampoHook btn = FormHook.makeFormBoton("limpiar formulario", Color.WHITE, Color.BLACK);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btn.setPreferredSize(new Dimension(200, 50));
+        btnLimpiar = btn;
+    }
+
+    /**
+     * Configura los controles de la barra superior de la pantalla ABCC
+     * Incluye botones de regreso al panel de control, limpiar formulario, filtrar registros automáticamente, commit y rollback
+     */
+    private void configurarPanelOpciones(){
+        PanelHook panelRegresar = FormHook.makeGridBagPanel().setBackground(Color.YELLOW).setOpaque(false);
+        PanelHook panelConsulta = FormHook.makeGridBagPanel().setBackground(Color.BLUE).setOpaque(false);
+        PanelHook panelCambios = FormHook.makeGridBagPanel().setBackground(Color.DARK_GRAY).setOpaque(false);
+
+        GridBagConstraints constraints = FormHook.makeConstraint(-1, 0, 0.15f, 1, GridBagConstraints.BOTH);
+        panelOpciones.appendChild("panelBack", panelRegresar, constraints);
+
+        constraints.weightx = 0.6f;
+        panelOpciones.appendChild("panelConsulta", panelConsulta, constraints);
+
+        constraints.weightx = 0.15f;
+        panelOpciones.appendChild("panelCambios", panelCambios, constraints);
+
+        crearBackButton();
+        crearCommitButton();
+        crearRollbackButton();
+        crearConsultaCheck();
+        crearLimpiarButton();
+
+        GridBagConstraints botonesConstraint = FormHook.makeConstraint(0, -1, 0, 0, GridBagConstraints.NONE);
+        botonesConstraint.insets = new Insets(20, 0, 20, 0);
+        panelRegresar.appendChild("btnBack", btnBack, botonesConstraint);
+        panelRegresar.appendChild("btnLimpiar", btnLimpiar, botonesConstraint);
+
+        panelConsulta.appendChild("checkConsulta", checkConsulta, botonesConstraint);
+
+        panelCambios.appendChild("btnCommit", btnCommit, botonesConstraint);
+        panelCambios.appendChild("btnRollback", btnRollback, botonesConstraint);
+    }
+
+    /**
+     * Habilita la acción de limpiado del formulario
+     */
+    private void setLimpiarAccion(){
+        btnLimpiar.addActionListener(e->{
+                formulario.form.vaciar();
+        });
+    }
+    /**
+     * Habilita la acción de commit a la base de datos
+     */
+    private void setCommitAccion(){
+        btnCommit.addActionListener(e->{
+            if(panelSiNo("Guardar cambios en la base de datos de forma permanente?", "Revertir cambios") != JOptionPane.YES_OPTION) return;
+            try {
+                ConexionBD.getConector().commit();
+                actualizarTablaABCCThread(selecNombres, filtroNombres, filtroValores);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
+    /**
+     * Habilita la acción de rollback de la base de datos
+     */
+    private void setRollbackAccion(){
+        btnRollback.addActionListener(e->{
+            if(panelSiNo("Deshacer cambios de la base de datos?", "Revertir cambios") != JOptionPane.YES_OPTION) return;
+            try {
+                ConexionBD.getConector().rollback();
+                actualizarTablaABCCThread(selecNombres, filtroNombres, filtroValores);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
+    /**
+     * Establece una acción de clic del botón de regreso
+     */
     public void setBackAccion(ActionListener listener){
         btnBack.addActionListener(listener);
     }
@@ -93,6 +230,34 @@ public class ABCC extends JPanel{
         });
     }
 
+    /**
+     * Retorna el estado de selección de la opción de auto filtrado
+     * @return
+     */
+    public boolean getAutoFiltrado(){
+        return ((JCheckBox)checkConsulta.componente).isSelected();
+    }
+
+    /**
+     * Agrega listeners a todos los campos del formulario, al detectar un cambio obtiene la información del formulario
+     */
+    private void activarAutoFiltrado(){
+        formulario.form.setActionListenerGlobal(data -> {
+
+            if(getAutoFiltrado()){
+
+                ArrayList<Object> datos = formulario.form.extraer();
+                String[] nombres = formulario.form.obtenerCamposNombres();
+
+                filtroNombres = new ArrayList<>(List.of(nombres));
+                filtroValores = datos;
+
+                System.out.println(filtroValores);
+                actualizarTablaABCCThreadLike(selecNombres, filtroNombres, filtroValores);
+
+            }
+        });
+    }
     /**
      * Agrega un nuevo modelo si no existe una selección, o actualiza el modelo seleccionado
      * @param modelo nuevo modelo a ingresar a la BD
@@ -122,6 +287,9 @@ public class ABCC extends JPanel{
     }
     public void panelError(String msg, String titulo){
         JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
+    }
+    public int panelSiNo(String mensaje, String titulo){
+        return JOptionPane.showOptionDialog(null, mensaje, titulo, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No"}, "No");
     }
     /**
      * Asocia diferentes mensajes genéricos validación fallida a cada campo del formulario para mostrarlos en pantalla después
@@ -226,6 +394,17 @@ public class ABCC extends JPanel{
         }
         return null;
     }
+    public ArrayList<ModeloBD> realizarConsultaLike(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) {
+
+        try {
+            return DAO.d.obtenerRegistrosLike(tabla, selecNombres, filtroNombres, filtroValores);
+        } catch (SQLException e) {
+            handlearError(e.getErrorCode(), tabla);
+            System.out.println("Error de consulta: " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     /**
      * Agrega un nuevo registro a la BD
@@ -244,7 +423,25 @@ public class ABCC extends JPanel{
             e.printStackTrace();
         }
     }
-
+    protected void listHookOciones( String campo, String name, String nulo){
+        ListHook<Integer, String> lista = (ListHook<Integer, String>) getListHook(campo);
+        ArrayList<ModeloBD> registros = realizarConsulta(name, null, null, null);
+        lista.addItem(null, nulo);
+        registros.forEach(modelo ->{
+            try {
+                Object[] datos = modelo.obtenerDatos();
+                datos = ModeloBD.dePrimarias(name, datos);
+                System.out.println(Arrays.toString(datos) +","+ modelo.getDisplay());
+                lista.addItem((Integer) datos[0], modelo.getDisplay());
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
     /**
      * Elimina un registro de la BD
      * @param r registro a eliminar
@@ -333,6 +530,30 @@ public class ABCC extends JPanel{
                 ArrayList<ModeloBD> m = realizarConsulta(tabla, finalSn, finalFn, finalFv);
 
                 if(m == null) return;
+                FormHook.limpiarTabla(scroll);
+                FormHook.rellenarTabla(scroll, m);
+                configurarBotonesRegistros(scroll);
+            }
+        }).start();
+    }
+    public void actualizarTablaABCCThreadLike(ArrayList<String> selecNombres, ArrayList<String> filtroNombres, ArrayList<Object> filtroValores){
+
+        String[] sn = null;
+        String[] fn = null;
+        Object[] fv = null;
+        if(selecNombres!=null)sn = selecNombres.toArray(new String[0]);
+        if(filtroNombres!=null)fn = filtroNombres.toArray(new String[0]);
+        if(filtroValores!=null)fv = filtroValores.toArray();
+
+        String[] finalSn = sn;
+        String[] finalFn = fn;
+        Object[] finalFv = fv;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<ModeloBD> m = realizarConsultaLike(tabla, finalSn, finalFn, finalFv);
+                //System.out.println(m.size());
+
                 FormHook.limpiarTabla(scroll);
                 FormHook.rellenarTabla(scroll, m);
                 configurarBotonesRegistros(scroll);

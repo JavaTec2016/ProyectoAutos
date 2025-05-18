@@ -8,6 +8,12 @@ public class Auto_Modelo extends ModeloBD {
     public Auto_Modelo(String nombre) {
         this.nombre = nombre;
     }
+
+    @Override
+    public String getDisplay() {
+        return nombre;
+    }
+
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Auto_Modelo.class);
     }

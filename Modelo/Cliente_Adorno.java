@@ -12,6 +12,12 @@ public class Cliente_Adorno extends ModeloBD {
         this.id_cliente = id_cliente;
         this.id_opcion = id_opcion;
     }
+
+    @Override
+    public String getDisplay() {
+        return "ID:" + id + ", ID cliente: " + id_cliente + " ID opcion: " + id_opcion;
+    }
+
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Cliente_Adorno.class);
     }
@@ -34,7 +40,7 @@ public class Cliente_Adorno extends ModeloBD {
         return new Boolean[]{true, true, true};
     }
     public static String[] obtenerCamposComponentes(){
-        return new String[]{"textfield", "textfield", "textfield"};
+        return new String[]{"textfield", "listhook", "listhook"};
     }
     public static String[][] obtenerEspeciales(){
         return new String[][]{new String[]{""},new String[]{""},new String[]{""}};

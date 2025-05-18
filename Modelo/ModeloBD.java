@@ -52,7 +52,6 @@ public abstract class ModeloBD implements Registrable {
         }
         return s;
     }
-    public String getDisplay(){return null;};
     public LinkedHashMap<String, Object> toHashMap() throws IllegalAccessException {
         String[] noms = obtenerCamposNombresDe(getClass().getSimpleName());
         Object[] vals = obtenerDatos();
@@ -180,6 +179,7 @@ public abstract class ModeloBD implements Registrable {
         registrarModelo(Auto_Opcion.class);
         registrarModelo(Opciones_Activas.class);
         registrarModelo(Venta.class);
+        registrarModelo(Cliente_Adorno.class);
     }
     public static String formatearMensajeErrorForaneas(String modelo){
         try {

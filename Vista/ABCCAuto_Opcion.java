@@ -13,23 +13,18 @@ public class ABCCAuto_Opcion extends ABCC {
 
     public ABCCAuto_Opcion() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         super(Auto_Opcion.class.getSimpleName());
-
+        titulo.setText("Lista de modificaciones");
         ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
             Ventana.panelError("Ya hay una opción registrada con la misma ID", "Opción duplicado");
         });
         ErrorHandler.registrarHandler(ErrorHandler.SQL_UNKNOWN_FOREIGN, data -> {
             panelError("No existe un auto con la ID proporcionada", "El auto no existe");
         });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_FOREIGN_RElATION, data -> {
+            panelError("Imposible eliminar: esta opción está seleccionada por uno o más clientes", "Error de eliminación");
+        });
 
-        ListHook<Integer, String> autoLista = (ListHook<Integer, String>)(formulario.form.getInput("id_auto").componente);
-        ArrayList<ModeloBD> autos = realizarConsulta(Auto.class.getSimpleName(), null, null, null);
-
-        autoLista.addItem(null, "Seleccione una opción..");
-        for (ModeloBD modelo : autos) {
-            Auto auto = (Auto)modelo;
-            String display = modelo.getDisplay();
-            autoLista.addItem(auto.getId(), display);
-        }
+        listHookOciones("id_auto", Auto.class.getSimpleName(), "Opciones...");
     }
 
 }

@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.SimpleFormatter;
@@ -30,6 +31,9 @@ public interface Extractor {
                 if(t.isEmpty()) return null;
                 else return t;
 
+            case "jpasswordfield":
+                return new String(((JPasswordField)campo).getPassword());
+
             case "decimalfield":
                 return ((DecimalField)campo).getDecimal();
 
@@ -43,6 +47,7 @@ public interface Extractor {
                 return ((JCheckBox)campo).isSelected();
 
             case "jdatepicker":
+                if(((JDatePicker)campo).getFormattedTextField().getText().isEmpty()) return null;
                 DateModel k = ((JDatePicker)campo).getModel();
                 return formatearFecha(k);
 
@@ -92,27 +97,37 @@ public interface Extractor {
      * @param dato dato a mostrar
      */
     static void colocarDato(JComponent comp, Object dato){
-        if(dato == null) return;
+
         if(comp instanceof JTextField){
-            ((JTextField) comp).setText(dato.toString());
+            if(dato == null) ((JTextField) comp).setText("");
+            else ((JTextField) comp).setText(dato.toString());
         }
         else if (comp instanceof ListHook<?,?>){
             ((ListHook<?, ?>) comp).setSelectedKey(dato);
         }
         else if(comp instanceof JComboBox<?>){
-            ((JComboBox<?>) comp).setSelectedItem(dato);
+            if(dato == null) ((JComboBox<?>) comp).setSelectedIndex(0);
+            else ((JComboBox<?>) comp).setSelectedItem(dato);
         }
         else if(comp instanceof JCheckBox){
+            if(dato == null) ((JCheckBox) comp).setSelected(false);
             ((JCheckBox) comp).setSelected((Boolean) dato);
         }
         else if(comp instanceof JDatePicker){
-            java.sql.Date fecha = java.sql.Date.valueOf(dato.toString());
             Calendar c = Calendar.getInstance();
+            if(dato == null){
+                setJDatePickerValue(null, (JDatePicker)comp);
+                return;
+            }
+            java.sql.Date fecha = java.sql.Date.valueOf(dato.toString());
             c.setTime(fecha);
-
             setJDatePickerValue(c, (JDatePicker) comp);
         }
         else if(comp instanceof DecimalField){
+            if(dato == null) {
+                ((DecimalField) comp).setDecimal(null);
+                return;
+            }
             if(dato.toString().contains(".")) ((DecimalField) comp).setDecimal(dato.toString());
             else{
                 System.out.println("EXTRACTOR Decimal invalido: " + dato.toString());
@@ -122,6 +137,12 @@ public interface Extractor {
         }
     }
     static void setJDatePickerValue(Calendar calendar, JDatePicker picker){
+        if(calendar == null){
+            picker.getModel().setValue(null);
+            picker.getFormattedTextField().setValue(null);
+            return;
+        }
+
         calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         picker.getModel().setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));

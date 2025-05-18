@@ -192,6 +192,11 @@ public class FormHook {
             }
         });
     }
+
+    /**
+     * Establece el tamaño mínimo de los labels del formulario
+     * @param d tamaño
+     */
     public void setLabelsMinimumSize(Dimension d){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -200,6 +205,10 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Establece el tamaño máximo de los inputs del formulario
+     * @param d tamaño
+     */
     public void setInputsMinimumSize(Dimension d){
         campos.forEach(new BiConsumer<String, CampoHook>() {
             @Override
@@ -230,7 +239,6 @@ public class FormHook {
             }
         });
     }
-
     /**
      * Crea los elementos del formulario, labels e inputs especificando constraints
      * @param gc constraints para agregar labels e inputs al campo con layout
@@ -266,7 +274,12 @@ public class FormHook {
             System.out.println("El campo no se pudo agregar: " + tipoComponentes.get(nombre));
         }
     }
-
+    public void setActionListenerGlobal(Call c){
+        campos.forEach((nombre, campoHook) -> {
+            //System.out.println("INPUT LIST "+ nombre +" AAA " +getInput(nombre).id);
+            getInput(nombre).addActionListenerGlobal(c);
+        });
+    }
     /**
      * Extrae todos los datos de los campos de este formulario
      * @return lista de datos
@@ -311,6 +324,11 @@ public class FormHook {
             Object dato = datos[i];
             colocarDato(campos.get(nom), dato);
         }
+    }
+    public void vaciar(){
+        campos.forEach((nombre, campoHook) -> {
+            colocarDato(campoHook, null);
+        });
     }
     /**
      * Coloca un dato en el input de un campo
@@ -1136,7 +1154,9 @@ public class FormHook {
         holder.appendChild("main", main, gc);
         //gc de la barra main
         gc.gridx = 0;
-        gc.weighty = .25;
+        gc.weighty = .075;
+        topbar.setMaximumSize(new Dimension(1000, 180));
+        topbar.setMinimumSize(new Dimension(0, 180));
         main.appendChild("topbar", topbar, gc);
         //gc del panel de la tabla
         gc.weighty = 1-gc.weighty;

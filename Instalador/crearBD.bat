@@ -28,8 +28,6 @@ set "pass=%4"
 
     echo Creando la base de datos...
     db2 CREATE DATABASE %bd%
-    db2 connect to %bd%
-    db2 GRANT DBADM ON DATABASE TO USER %user%
     if %errorlevel% NEQ 0 (
         echo Error al crear la base de datos
         db2 connect reset

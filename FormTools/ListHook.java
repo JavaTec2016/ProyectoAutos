@@ -92,7 +92,9 @@ public class ListHook<K, V> extends JComboBox<Item<K, V>> {
             System.out.println(item);
         };
     }
-
+    public void setAccion(Call c){
+        accion = c;
+    }
     /**
      * Habilita la función de selección del componente
      */

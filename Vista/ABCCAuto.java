@@ -17,7 +17,7 @@ public class ABCCAuto extends ABCC{
         super(Auto.class.getSimpleName());
 
         ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
-            Ventana.panelError("Ya existe un auto con la misma ID", "Vendedor duplicado");
+            Ventana.panelError("Ya existe un auto con la misma ID", "Auto duplicado");
         });
 
         ErrorHandler.registrarHandler(ErrorHandler.SQL_UNKNOWN_FOREIGN, data -> {

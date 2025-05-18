@@ -13,5 +13,8 @@ public class ABCCVendedor extends ABCC {
         ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
             Ventana.panelError("Ya existe un vendedor con la misma ID", "Vendedor duplicado");
         });
+        ErrorHandler.registrarHandler(ErrorHandler.SQL_FOREIGN_RElATION, data -> {
+            panelError("Imposible eliminar: Este vendedor está asignado en una o más ventas", "Error de eliminación");
+        });
     }
 }

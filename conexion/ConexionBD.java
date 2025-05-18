@@ -13,6 +13,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
 public class ConexionBD {
@@ -40,8 +41,6 @@ public class ConexionBD {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             System.out.println("Driver prendido");
             Properties p = new Properties();
-            p.put("user", usuario);
-            p.put("password", contra);
             conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, p);
 
             if(conexion != null && !conexion.isClosed()){
@@ -102,8 +101,8 @@ public class ConexionBD {
      */
     public int probarCredenciales(String usuario, String pass, String puerto){
         try {
-            abrirConexionInstancia(usuario, pass, "Usuario", puerto);
-            ResultSet rs = DAO.d.consultar("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
+            abrirConexionInstancia(usuario, pass, Userio.class.getSimpleName(), puerto);
+            ResultSet rs = DAO.d.consultar("Usuarios", null, new String[]{"nombre", "password"}, new Object[]{usuario, pass});
             boolean st = rs.next();
 
             cerrarConexion();
@@ -114,7 +113,18 @@ public class ConexionBD {
             return e.getErrorCode();
         }
     }
-
+    public int probarCredenciales(String usuario, String pass){
+        try {
+            abrirConexion("", "", Userio.class.getSimpleName());
+            ArrayList<ModeloBD> regs = DAO.d.obtenerRegistros(Userio.class.getSimpleName(), null, new String[]{"nombre", "password"}, new Object[]{usuario, pass});
+            cerrarConexion();
+            if(!regs.isEmpty()) return ErrorHandler.OK;
+            return ErrorHandler.LOGIN_NO_USER;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return e.getErrorCode();
+        }
+    }
     /**
      * Obtiene el modelo de usuario de la instancia de usuarios
      * @param usuario nombre del usuario
@@ -123,8 +133,9 @@ public class ConexionBD {
      * @throws SQLException si ocurre un error durante la operación
      */
     public Userio obtenerUsuario(String usuario, String pass) throws SQLException {
-        abrirConexionInstancia(usuario, pass, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
-        ArrayList<ModeloBD> ar = DAO.d.obtenerRegistros("Usuarios", null, new String[]{"usuario", "password"}, new Object[]{usuario, pass});
+        abrirConexion("", "", Userio.class.getSimpleName());
+        ArrayList<ModeloBD> ar = DAO.d.obtenerRegistros(Userio.class.getSimpleName(), null, new String[]{"nombre", "password"}, new Object[]{usuario, pass});
+        cerrarConexion();
         return (Userio)ar.get(0);
     }
     public void setAutoCommit(boolean estado) throws SQLException {
@@ -155,14 +166,16 @@ public class ConexionBD {
      * @return codigo de conexion, 0 si fue exitosa o su respectivo codigo de error
      */
     public int abrirConexion2(String usuario,String pass, String BD){
-        int ocurrencia = probarCredenciales(usuario, pass, Config.INSTANCIA_USUARIOS_PUERTO);
+        int ocurrencia = probarCredenciales(usuario, pass);
+
         if(ocurrencia==ErrorHandler.OK){
             try {
                 usr = obtenerUsuario(usuario, pass);
-                abrirConexion(usuario, pass, BD);
+                abrirConexion("", "", BD);
                 setAutoCommit(false);
             } catch (SQLException e) {
                 ocurrencia = e.getErrorCode();
+                e.printStackTrace();
             }
         }
         return ocurrencia;
@@ -174,6 +187,7 @@ public class ConexionBD {
      */
     public void cerrarConexion() throws SQLException {
         if(conexion != null && !conexion.isClosed()){
+            usr = null;
             System.out.println("Conexion cerrada");
             conexion.close();
         }
@@ -218,7 +232,7 @@ public class ConexionBD {
      */
     public void colocarPrepared(int idx, Object dato) throws SQLException {
         if(dato == null) {
-            System.out.println("CONEXION PREPARED NULO " + idx);
+            //System.out.println("CONEXION PREPARED NULO " + idx);
             st.setObject(idx, null);
             return;
         };
@@ -265,21 +279,20 @@ public class ConexionBD {
         Install.crearInstanciaUsuario();
 
     }
-    public void autoInstalar() throws IOException, InterruptedException {
+    public boolean autoInstalar() throws IOException, InterruptedException {
         try {
-            abrirConexionInstancia(Config.USER, Config.PASS, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
+            abrirConexion(Config.USER, Config.PASS, Userio.class.getSimpleName());
+            cerrarConexion();
+            abrirConexion(Config.USER, Config.PASS, "Autos");
             cerrarConexion();
         } catch (SQLException e) {
-            Install.crearInstanciaUsuario();
+            DB2Ejecutor.instalarBasesSencillo();
+            return true;
         }
-        try {
-            abrirConexion("", "", "Autos");
-            cerrarConexion();
-        } catch (SQLException e) {
-            DB2Ejecutor.instalarBases();
-        }
+        return false;
     }
-    public static void main(String[] args) throws SQLException, IOException {
-        //getConector().abrirConexionInstancia("SANTIAGO", "santiago", "userio", "55000");
+    public static void main(String[] args) throws SQLException, IOException, InterruptedException {
+        getConector().autoInstalar();
+        //getConector().abrirConexionInstancia(Config.USER, Config.PASS, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
     }
 }

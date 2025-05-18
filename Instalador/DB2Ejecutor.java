@@ -45,6 +45,20 @@ public interface DB2Ejecutor {
         return b;
     }
     /**
+     * Crea un usuario de windows, si no existe, para el manejo de la BD
+     * @param nombre nombre del usuario
+     * @param password contraseña del usuario
+     * @return codigo de salida del proceso
+     * @throws IOException si ocurre un error al leer el script
+     * @throws InterruptedException si la ejecución del script es interrumpida
+     */
+    static int crearUsuarioDB2(String nombre, String password) throws IOException, InterruptedException {
+        salida.clear();
+        ProcessBuilder bld = crearDB2Builder(scriptPath("crearUsuario.bat"), nombre, password);
+        Process p = bld.start();
+        return p.waitFor();
+    }
+    /**
      * Crea una nueva instancia de DB2 con el nombre y puerto especificados, puede establecer el arranque automático de la instancia.
      * Si ya hay una instancia con ese nombre, el script modifica sus configuraciones.
      * @param nombre nombre de la nueva instancia
@@ -97,13 +111,20 @@ public interface DB2Ejecutor {
     private static int cargarScriptEn(String instancia, String ruta) throws IOException, InterruptedException {
         return crearDB2Builder(scriptPath("DB2vtfInstancia.bat"), instancia, ruta).start().waitFor();
     }
+    private static int cargarScriptEn(String instancia, String ruta, String nombre, String pass) throws IOException, InterruptedException {
+        return crearDB2Builder(scriptPath("DB2vtfInstancia.bat"), instancia, ruta, nombre, pass).start().waitFor();
+    }
     /**
      * Crea las bases de datos de usuario y Autos en sus respectivas instancias
      * @throws IOException si ocurre un error al leer el script
      * @throws InterruptedException si la ejecución del script es interrumpida
      */
     static void instalarBases() throws IOException, InterruptedException {
-        cargarScriptEn("DB2Inst4", Lector.getScriptPath("usr"));
+        cargarScriptEn(Config.INSTANCIA_USUARIOS_NOMBRE, Lector.getScriptPath("usr"), Config.USER, Config.PASS);
+        cargarScriptEn("DB2", Lector.getScriptPath("bd"), Config.USER, Config.PASS);
+    }
+    static void instalarBasesSencillo() throws IOException, InterruptedException {
+        cargarScriptEn("DB2", Lector.getScriptPath("usr"));
         cargarScriptEn("DB2", Lector.getScriptPath("bd"));
     }
 

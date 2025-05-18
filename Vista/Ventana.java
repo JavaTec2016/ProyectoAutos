@@ -1,6 +1,7 @@
 package Vista;
 
 import ErrorHandlin.Call;
+import ErrorHandlin.ErrorHandler;
 import FormTools.CampoHook;
 import FormTools.FormHook;
 import FormTools.MainButtonHook;
@@ -8,6 +9,7 @@ import FormTools.PanelHook;
 import Instalador.DB2Ejecutor;
 import Modelo.*;
 import conexion.ConexionBD;
+import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,41 +61,20 @@ public class Ventana extends JFrame {
         JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
     }
     /**
-     * Realiza una conexión a una BD con los parámetros dados
-     * @param usuario usuario con el cual conectarse
-     * @param pass contraseña del usuario
-     * @param bd nombre de la BD
-     * @return código de error, o 0 si fue exitosa
-     */
-    public int conectar(String usuario, String pass, String bd){
-        try {
-            ConexionBD.getConector().abrirConexion(usuario, pass, bd);
-        } catch (SQLException e) {
-            System.out.println("ERROR AL CONECTAR: "+e.getErrorCode());
-            return e.getErrorCode();
-        } catch (NullPointerException e){
-            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
-            return 1;
-        }
-        return 0;
-    }
-
-    /**
      * Configura la acción de inicio de sesión de la ventana de login y abre una conexión con los datos de autenticación.
      * Si la autenticación es exitosa, entonces muestra el panel de control configurado para el usuario.
      * Si la autenticación falla, se relanza el error.
      */
     public void configurarLogin(){
-        ventanaLogin.accionLogear(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ArrayList<Object> l = ventanaLogin.form.extraer();
-                int cod = //conectar((String) l.get(0), (String) l.get(1), "Autos");
-                        conectar("", "", "Autos");
-                if(cod!=0) return;
+        ventanaLogin.accionLogear(e -> {
+            ArrayList<Object> l = ventanaLogin.form.extraer();
+            int cod =  ConexionBD.getConector().abrirConexion2((String) l.get(0), (String) l.get(1), "Autos"); //conectar((String) l.get(0), (String) l.get(1), "Autos");
+            if(cod!=0) {
+                panelError("Usuario o contraseña incorrectos", "Autenticación fallida");
+                return;
+            };
 
-                cambiarAPrincipal(ConexionBD.getConector().getUsr());
-            }
+            cambiarAPrincipal(ConexionBD.getConector().getUsr());
         });
     }
 
@@ -173,6 +154,9 @@ public class Ventana extends JFrame {
         }else
         if(tabla.equals(Venta.class.getSimpleName())){
             refrescarControl(new ABCCVenta());
+        }else
+        if(tabla.equals(Cliente_Adorno.class.getSimpleName())){
+            refrescarControl(new ABCCCliente_Adorno());
         }
     }
 
@@ -184,6 +168,7 @@ public class Ventana extends JFrame {
         principal.botonesMain.forEach((id, btn) -> btn.setMouseClick(e -> {
             try {
                 cambiarAABCC(id);
+                System.out.println(id);
             } catch (InvocationTargetException ex) {
                 throw new RuntimeException(ex);
             } catch (NoSuchMethodException ex) {
@@ -212,14 +197,23 @@ public class Ventana extends JFrame {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ConexionBD.getConector().autoInstalar();
-
-        ModeloBD.registrarModelos();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Ventana v = new Ventana();
+        boolean cambios = ConexionBD.getConector().autoInstalar();
+        if(cambios){
+            try {
+                DAO.d.agregar(new Userio("admin", "admin", true, true, true));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (SQLException e) {
+                if(e.getErrorCode() == ErrorHandler.SQL_DUPLICATE_ENTRY) {
+                    System.out.println("Ya hay un usuario administrador");
+                    return;
+                }
+                panelError("Ocurrió un error al generar al usuario administrador", "Error de instalación");
             }
+        }
+        ModeloBD.registrarModelos();
+        SwingUtilities.invokeLater(() -> {
+            Ventana v = new Ventana();
         });
     }
 }

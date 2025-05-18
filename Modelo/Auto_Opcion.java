@@ -15,6 +15,12 @@ public class Auto_Opcion extends ModeloBD {
         this.precio = precio;
         this.opcion = opcion;
     }
+
+    @Override
+    public String getDisplay() {
+        return id+", " + opcion + ", $: " + precio + ", ID del auto: " + id_auto;
+    }
+
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Auto_Modelo.class);
     }

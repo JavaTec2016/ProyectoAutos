@@ -25,6 +25,12 @@ public class Userio extends ModeloBD {
     public static String[] obtenerLabels(){
         return new String[]{"Usuario", "Contraseña", "Lectura", "Escritura", "Administrador"};
     }
+
+    @Override
+    public String getDisplay() {
+        return nombre;
+    }
+
     public static Class<?>[] obtenerCampoTipos(){
         return obtenerCampoTiposDe(Userio.class);
     }

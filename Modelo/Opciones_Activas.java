@@ -19,6 +19,12 @@ public class Opciones_Activas extends ModeloBD {
         this.opcion = opcion;
         this.precio = precio;
     }
+
+    @Override
+    public String getDisplay() {
+        return "ID: " + id_adorno + ", ID Cliente: " + id_cliente+", Opcion: " +opcion;
+    }
+
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Opciones_Activas.class);
     }

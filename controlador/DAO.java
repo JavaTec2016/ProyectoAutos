@@ -19,6 +19,13 @@ public class DAO {
     ResultSet rs = null;
     public static DAO d = new DAO();
     private DAO(){}
+
+    /**
+     * Agrega un modelo a la base de datos
+     * @param r Modelo a agregar
+     * @throws IllegalAccessException si los datos del modelo no son accesibles
+     * @throws SQLException si falla la adición
+     */
     public void agregar(Registrable r) throws IllegalAccessException, SQLException {
         String tipo = r.getClass().getSimpleName();
         String[] nombres = ModeloBD.obtenerCampoNombresDe(r.getClass());
@@ -37,6 +44,16 @@ public class DAO {
         System.out.println(sql + " :: " + Arrays.toString(datos));
         conexion.ejecutarDML();
     }
+
+    /**
+     * Realiza una consulta a la Base de datos
+     * @param tabla nombre de la tabla a consultar
+     * @param selecNombres columnas a seleccionar de la consulta
+     * @param filtroNombres columnas a filtrar en la consulta
+     * @param filtroValores valores de las columnas a filtrar
+     * @return ResultSet con los registros
+     * @throws SQLException si falla la consulta
+     */
     public ResultSet consultar(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
         Object[] val = new Object[0];
         String sql = "SELECT ";
@@ -57,17 +74,75 @@ public class DAO {
                 String v = "";
                 if(valor instanceof String || valor instanceof Date) v = "'"+valor.toString()+"'";
                 //fil += filtroNombres[i]+"="+v+", ";
-                fil+= filtroNombres[i]+"=?, ";
+                fil+= filtroNombres[i]+"=? AND ";
             }
-            fil = fil.substring(0, fil.length()-2);
+            fil = fil.substring(0, fil.length()-5);
             sql = sql+fil;
         }
 
         conexion.prepararStatement(sql, val);
         return conexion.ejecutarSQL();
     }
+    /**
+     * Realiza una consulta a la Base de datos, busca coincidencias aproximadas a los filtros.
+     * Utiliza LIKE y agrega comodines '%' al final de cada valor a filtrar
+     * @param tabla nombre de la tabla a consultar
+     * @param selecNombres columnas a seleccionar de la consulta
+     * @param filtroNombres columnas a filtrar en la consulta
+     * @param filtroValores valores de las columnas a filtrar
+     * @return ResultSet con los registros
+     * @throws SQLException si falla la consulta
+     */
+    public ResultSet consultarLike(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
+        Object[] val = new Object[0];
+        String[] likes = new String[0];
+        String sql = "SELECT ";
+        if(selecNombres == null) sql += "* ";
+        else{
+            for (String selecNombre : selecNombres) {
+                sql+=selecNombre+", ";
+            }
+            sql = sql.substring(0, sql.length()-2)+" ";
+        }
+        sql += "FROM " + tabla;
+        if(filtroNombres != null && filtroValores != null){
+            val = filtroValores;
+            likes = new String[val.length];
+
+            sql += " WHERE ";
+            String fil = "";
+            for (int i = 0; i < filtroNombres.length; i++) {
+                fil += filtroNombres[i]+" LIKE ? AND ";
+                likes[i] = "%";
+                if(filtroValores[i] != null) {
+                    String txt = filtroValores[i].toString();
+                    if(filtroValores[i] instanceof Boolean) txt = txt.toUpperCase();
+                    likes[i] = txt.concat("%");
+                }
+                //likes[i] = filtroValores[i].toString().concat("%");
+            }
+            fil = fil.substring(0, fil.length()-5);
+            sql = sql+fil;
+        }
+        //System.out.println("CONSUTA LIKE "+Arrays.toString(likes) + " sql " + sql);
+        conexion.prepararStatement(sql, likes);
+        return conexion.ejecutarSQL();
+    }
     public ArrayList<ModeloBD> obtenerRegistros(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
         ResultSet rs = consultar(tabla, selecNombres, filtroNombres, filtroValores);
+        Object[] datos = new Object[rs.getMetaData().getColumnCount()];
+        ArrayList<ModeloBD> modelos = new ArrayList<>();
+
+        while (rs.next()){
+            for (int i = 0; i < datos.length; i++) {
+                datos[i] = rs.getObject(i+1);
+            }
+            modelos.add(ModeloBD.instanciar(tabla, datos));
+        }
+        return modelos;
+    }
+    public ArrayList<ModeloBD> obtenerRegistrosLike(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
+        ResultSet rs = consultarLike(tabla, selecNombres, filtroNombres, filtroValores);
         Object[] datos = new Object[rs.getMetaData().getColumnCount()];
         ArrayList<ModeloBD> modelos = new ArrayList<>();
 
@@ -129,13 +204,13 @@ public class DAO {
             String sql = "DELETE FROM " + nom;
             String where = " WHERE ";
             for (Integer idx : primariasIdx) {
-                where+=nombres[idx]+"=?, ";
+                where+=nombres[idx]+"=? AND ";
             }
             int i = 0;
             for (Object filtrado : filtrados) {
                 filtrados[i] = valores[primariasIdx[i]];
             }
-            where = where.substring(0, where.length()-2);
+            where = where.substring(0, where.length()-5);
             conexion.prepararStatement(sql+where, filtrados);
             conexion.ejecutarDML();
 

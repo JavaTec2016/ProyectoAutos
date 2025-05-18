@@ -30,6 +30,12 @@ public class Venta extends ModeloBD {
         this.fecha_entrega = fecha_entrega;
         this.garantia_tipo = garantia_tipo;
     }
+
+    @Override
+    public String getDisplay() {
+        return "ID: " + id + ", ID Cliente: " + id_cliente + "ID Auto: " + id_auto + ", Precio: " + precio_final;
+    }
+
     public static String[] obtenerCampoNombres(){
         return obtenerCampoNombresDe(Venta.class);
     }

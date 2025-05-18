@@ -13,7 +13,7 @@ public class ABCCAuto_Modelo extends ABCC {
         titulo.setText("Modelos de auto");
         titulo.setAlignment(SwingConstants.CENTER, SwingConstants.CENTER);
         ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
-            Ventana.panelError("Ya existe un auto con la misma ID", "Vendedor duplicado");
+            Ventana.panelError("Este modelo ya existe", "Modelo duplicado");
         });
 
         ErrorHandler.registrarHandler(ErrorHandler.SQL_FOREIGN_RElATION, data -> {

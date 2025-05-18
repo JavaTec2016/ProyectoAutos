@@ -1,8 +1,11 @@
 package FormTools;
 
+import ErrorHandlin.Call;
+import org.jdatepicker.JDatePicker;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -155,5 +158,36 @@ public class CampoHook {
             campos.add(linea);
         }
         return campos;
+    }
+
+    public void addKeyListener(Call c){
+        componente.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyReleased(e);
+                c.run(e);
+            }
+        });
+    }
+    public void addActionListenerGlobal(Call c){
+        if(componente == null) return;
+        if(componente instanceof JButton){
+            ((JButton) componente).addActionListener(c::run);
+        }else
+        if(componente instanceof JCheckBox){
+            ((JCheckBox) componente).addActionListener(c::run);
+        }else
+        if(componente instanceof ListHook<?,?>){
+            ((ListHook<?, ?>) componente).setAccion(c);
+        }else
+        if(componente instanceof JComboBox<?>){
+            ((JComboBox<?>) componente).addActionListener(c::run);
+        }else
+        if(componente instanceof JDatePicker){
+            ((JDatePicker) componente).addActionListener(c::run);
+        }else
+        if(componente instanceof JTextField){
+            addKeyListener(c);
+        }
     }
 }

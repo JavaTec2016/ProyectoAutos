@@ -1,7 +1,7 @@
 CONNECT RESET;
 CREATE DATABASE Userio;
 CONNECT TO Userio;
-CREATE TABLE Usuario (
+CREATE TABLE Userio (
     nombre VARCHAR(32) NOT NULL PRIMARY KEY,
     password VARCHAR(32) NOT NULL,
     lectura BOOLEAN NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE Usuario (
     admin BOOLEAN NOT NULL
 );
 
-CREATE TABLE Usuario_Eliminado (
+CREATE TABLE Userio_Eliminado (
     nombre VARCHAR(32) NOT NULL PRIMARY KEY,
     password VARCHAR(32) NOT NULL,
     lectura BOOLEAN NOT NULL,
