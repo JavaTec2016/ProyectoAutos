@@ -16,6 +16,7 @@ public class ErrorHandler {
     public static final int SQL_FOREIGN_RElATION = -532;
     public static final int SQL_CONSTRAINT_FAIL = -801;
     public static final int RESULT_SET_OUT_OF_BOUNDS = -4476;
+    public static final int ERR_TRANSACTION_PENDING = -4471;
 
     static int AUTH_FAILED = -30082;
 

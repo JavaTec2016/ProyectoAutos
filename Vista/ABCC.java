@@ -285,11 +285,14 @@ public class ABCC extends JPanel{
         String[] noms = ModeloBD.obtenerCamposNombresDe(modelo);
         handlearErrorCampo(codigo, noms[idx]);
     }
-    public void panelError(String msg, String titulo){
+    public static void panelError(String msg, String titulo){
         JOptionPane.showMessageDialog(null, msg, titulo, JOptionPane.ERROR_MESSAGE);
     }
-    public int panelSiNo(String mensaje, String titulo){
+    public static int panelSiNo(String mensaje, String titulo){
         return JOptionPane.showOptionDialog(null, mensaje, titulo, JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No"}, "No");
+    }
+    public static int panelSiNoCancelar(String txt, String titulo){
+        return JOptionPane.showOptionDialog(null, txt, titulo, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Si", "No", "Cancelar"}, "Cancelar");
     }
     /**
      * Asocia diferentes mensajes genéricos validación fallida a cada campo del formulario para mostrarlos en pantalla después
@@ -524,18 +527,21 @@ public class ABCC extends JPanel{
         String[] finalSn = sn;
         String[] finalFn = fn;
         Object[] finalFv = fv;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<ModeloBD> m = realizarConsulta(tabla, finalSn, finalFn, finalFv);
+        new Thread(() -> {
+            ArrayList<ModeloBD> m = realizarConsulta(tabla, finalSn, finalFn, finalFv);
 
-                if(m == null) return;
-                FormHook.limpiarTabla(scroll);
-                FormHook.rellenarTabla(scroll, m);
-                configurarBotonesRegistros(scroll);
-            }
+            if(m == null) return;
+            FormHook.limpiarTabla(scroll);
+            FormHook.rellenarTabla(scroll, m);
+            configurarBotonesRegistros(scroll);
         }).start();
     }
+    /**
+     * Actualiza los registros de una tabla a traves de una consulta a la BD con filtros aproximados
+     * @param selecNombres datos a consultar en la tabla de la BD
+     * @param filtroNombres campos a filtrar en la consulta a la BD
+     * @param filtroValores valores a filtrar en la consulta a la BD
+     */
     public void actualizarTablaABCCThreadLike(ArrayList<String> selecNombres, ArrayList<String> filtroNombres, ArrayList<Object> filtroValores){
 
         String[] sn = null;
@@ -548,15 +554,12 @@ public class ABCC extends JPanel{
         String[] finalSn = sn;
         String[] finalFn = fn;
         Object[] finalFv = fv;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<ModeloBD> m = realizarConsultaLike(tabla, finalSn, finalFn, finalFv);
+        new Thread(() -> {
+            ArrayList<ModeloBD> m = realizarConsultaLike(tabla, finalSn, finalFn, finalFv);
 
-                FormHook.limpiarTabla(scroll);
-                FormHook.rellenarTabla(scroll, m);
-                configurarBotonesRegistros(scroll);
-            }
+            FormHook.limpiarTabla(scroll);
+            FormHook.rellenarTabla(scroll, m);
+            configurarBotonesRegistros(scroll);
         }).start();
     }
     /**
@@ -568,11 +571,8 @@ public class ABCC extends JPanel{
         if(registroSeleccionado != null){
             registroSeleccionado.setColorsNormal();
             System.out.println("DESELECCIONADO");
-            registroSeleccionado.setClicAccion(new Call() {
-                @Override
-                public void run(Object... data) {
-                    return;
-                }
+            registroSeleccionado.setClicAccion(data -> {
+                return;
             });
         }
         registroSeleccionado = r;
@@ -580,13 +580,8 @@ public class ABCC extends JPanel{
         if(r != null){
             r.setColorsSeleccion();
             modeloSeleccionado = r.asociado;
+            r.setClicAccion(data -> cambiarSeleccion(null));
 
-            r.setClicAccion(new Call() {
-                @Override
-                public void run(Object... data) {
-                    cambiarSeleccion(null);
-                }
-            });
             ((JButton)btnAgregar.componente).setText("MODIFICAR");
             btnAgregar.setForeground(Color.YELLOW);
         }else {

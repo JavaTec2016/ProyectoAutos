@@ -20,7 +20,8 @@ set db2instance
 
 if exist "%rutaSQL%" (
     db2  -vtf %rutaSQL%
-    GRANT DBADM ON DATABASE TO %user%
+    echo Otorgando permisos a la cuenta dedicada...
+    db2 GRANT DBADM ON DATABASE TO DB2ADMIN
     echo Carga completa
     pause
     exit /b 0

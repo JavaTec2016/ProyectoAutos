@@ -2,10 +2,8 @@ package Vista;
 
 import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
-import FormTools.CampoHook;
 import FormTools.FormHook;
-import FormTools.MainButtonHook;
-import FormTools.PanelHook;
+import Instalador.Config;
 import Instalador.DB2Ejecutor;
 import Modelo.*;
 import conexion.ConexionBD;
@@ -13,15 +11,11 @@ import controlador.DAO;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
 
 public class Ventana extends JFrame {
     Login ventanaLogin;
@@ -29,7 +23,23 @@ public class Ventana extends JFrame {
     ABCC control;
     CardLayout layout = null;
 
+    JMenuBar menu;
+    JMenu menuReporte;
+    JMenu menuVistas;
+    JMenu menuEstadisticas;
+
+    JMenuItem reporteFactura;
+
     public Ventana(){
+        agregarMenu();
+        menu.setVisible(false);
+        menuReporte = menuOpcion("Reportes");
+        reporteFactura = opcionItem("Facturas..", e->{
+
+        });
+
+        menuReporte.add(reporteFactura);
+        menu.add(menuReporte);
 
         setSize(500, 500);
 
@@ -52,6 +62,33 @@ public class Ventana extends JFrame {
         }
     }
 
+    /**
+     * Agrega un nuevo menu de opciones
+     */
+    public void agregarMenu(){
+        menu = new JMenuBar();
+        menu.setBackground(new Color(0, 153, 255));
+        menu.setBorder(null);
+        menu.setForeground(Color.white);
+        menu.setOpaque(true);
+        setJMenuBar(menu);
+    }
+    public JMenu menuOpcion(String texto){
+        JMenu opcion = new JMenu();
+        opcion.setBackground(new Color(0, 153, 255));
+        opcion.setText(texto);
+        return opcion;
+    }
+    public JMenuItem opcionItem(String texto, ActionListener clic){
+        JMenuItem item = new JMenuItem();
+        item.setBackground(new Color(0, 153, 255));
+        item.setForeground(Color.WHITE);
+        item.setText(texto);
+        item.setOpaque(true);
+
+        item.addActionListener(clic);
+        return item;
+    }
     /**
      * Muestra un panel de error con el mensaje y título dados
      * @param msg Mensaje de la ventana
@@ -190,25 +227,44 @@ public class Ventana extends JFrame {
                     layout.show(getContentPane(), "login");
                 } catch (SQLException ex) {
                     System.out.println("Error al cerrar sesion: ");
+                    if(ex.getErrorCode() == ErrorHandler.ERR_TRANSACTION_PENDING){
+                        int accion = panelCambios("Hay cambios sin guardar, desea descartarlos?", "Cambios sin guardar");
+
+                        try {
+                            if(accion == 0) ConexionBD.getConector().commit();
+                            if(accion == 1) ConexionBD.getConector().rollback();
+                            ConexionBD.getConector().cerrarConexion();
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    }
                     ex.printStackTrace();
                 }
             }
         });
     }
-
+    public static int panelCambios(String txt, String titulo){
+        return JOptionPane.showOptionDialog(null, txt, titulo, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[]{"Guardar", "Descartar", "Cancelar"}, "Cancelar");
+    }
     public static void main(String[] args) throws IOException, InterruptedException {
         boolean cambios = ConexionBD.getConector().autoInstalar();
-        if(cambios){
+        DB2Ejecutor.instalarBasesSencillo();
+        if(true){
             try {
+                ConexionBD.getConector().abrirConexion(Config.USER, Config.PASS, Userio.class.getSimpleName());
                 DAO.d.agregar(new Userio("admin", "admin", true, true, true));
+                ConexionBD.getConector().cerrarConexion();
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             } catch (SQLException e) {
                 if(e.getErrorCode() == ErrorHandler.SQL_DUPLICATE_ENTRY) {
                     System.out.println("Ya hay un usuario administrador");
-                    return;
+                }else{
+
+                    panelError("Ocurrió un error al generar al usuario administrador", "Error de instalación");
+                    e.printStackTrace();
                 }
-                panelError("Ocurrió un error al generar al usuario administrador", "Error de instalación");
             }
         }
         ModeloBD.registrarModelos();

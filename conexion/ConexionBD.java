@@ -41,7 +41,9 @@ public class ConexionBD {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             System.out.println("Driver prendido");
             Properties p = new Properties();
-            conexion = (Connection) DriverManager.getConnection("jdbc:db2:"+BD, p);
+            p.put("user", usuario);
+            p.put("password", contra);
+            conexion = (Connection) DriverManager.getConnection("jdbc:db2://localhost:50000/"+BD, p);
 
             if(conexion != null && !conexion.isClosed()){
                 System.out.println("Conexion exitosa");
@@ -115,7 +117,7 @@ public class ConexionBD {
     }
     public int probarCredenciales(String usuario, String pass){
         try {
-            abrirConexion("", "", Userio.class.getSimpleName());
+            abrirConexion(Config.USER, Config.PASS, Userio.class.getSimpleName());
             ArrayList<ModeloBD> regs = DAO.d.obtenerRegistros(Userio.class.getSimpleName(), null, new String[]{"nombre", "password"}, new Object[]{usuario, pass});
             cerrarConexion();
             if(!regs.isEmpty()) return ErrorHandler.OK;
@@ -133,7 +135,7 @@ public class ConexionBD {
      * @throws SQLException si ocurre un error durante la operación
      */
     public Userio obtenerUsuario(String usuario, String pass) throws SQLException {
-        abrirConexion("", "", Userio.class.getSimpleName());
+        abrirConexion(Config.USER, Config.PASS, Userio.class.getSimpleName());
         ArrayList<ModeloBD> ar = DAO.d.obtenerRegistros(Userio.class.getSimpleName(), null, new String[]{"nombre", "password"}, new Object[]{usuario, pass});
         cerrarConexion();
         return (Userio)ar.get(0);
@@ -171,7 +173,7 @@ public class ConexionBD {
         if(ocurrencia==ErrorHandler.OK){
             try {
                 usr = obtenerUsuario(usuario, pass);
-                abrirConexion("", "", BD);
+                abrirConexion(Config.USER, Config.PASS, BD);
                 setAutoCommit(false);
             } catch (SQLException e) {
                 ocurrencia = e.getErrorCode();
@@ -188,7 +190,9 @@ public class ConexionBD {
     public void cerrarConexion() throws SQLException {
         if(conexion != null && !conexion.isClosed()){
             usr = null;
+            setAutoCommit(true);
             System.out.println("Conexion cerrada");
+            if(st != null) st.close();
             conexion.close();
         }
     }
@@ -292,7 +296,8 @@ public class ConexionBD {
         return false;
     }
     public static void main(String[] args) throws SQLException, IOException, InterruptedException {
-        getConector().autoInstalar();
+        //getConector().autoInstalar();
+        DB2Ejecutor.instalarBasesSencillo();
         //getConector().abrirConexionInstancia(Config.USER, Config.PASS, Userio.class.getSimpleName(), Config.INSTANCIA_USUARIOS_PUERTO);
     }
 }

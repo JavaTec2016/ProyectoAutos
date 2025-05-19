@@ -124,6 +124,7 @@ public interface DB2Ejecutor {
         cargarScriptEn("DB2", Lector.getScriptPath("bd"), Config.USER, Config.PASS);
     }
     static void instalarBasesSencillo() throws IOException, InterruptedException {
+        crearUsuarioDB2(Config.USER, Config.PASS);
         cargarScriptEn("DB2", Lector.getScriptPath("usr"));
         cargarScriptEn("DB2", Lector.getScriptPath("bd"));
     }

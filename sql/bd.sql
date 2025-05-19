@@ -1,6 +1,10 @@
 CONNECT RESET;
 CREATE DATABASE Autos;
 CONNECT TO Autos;
+GRANT DBADM, SECADM ON DATABASE TO DB2ADMIN;
+CREATE SCHEMA DB2ADMIN AUTHORIZATION DB2ADMIN;
+CONNECT RESET;
+CONNECT TO Autos user DB2ADMIN using db2admin;
 
 CREATE TABLE Cliente(
     id INT NOT NULL PRIMARY KEY,
@@ -160,6 +164,68 @@ FROM
 		Auto_Modelo AS m
 		ON a.modelo = m.nombre
 	WHERE (SELECT COUNT(*) FROM Venta WHERE a.id = id_auto) = 0;
+
+CREATE VIEW Datos_Venta (
+    id_venta,
+    nombre_cliente,
+    apellido_cliente,
+    nombre_vendedor,
+    id_auto,
+    modelo,
+    color,
+    fecha_fabricacion,
+    pais_fabricacion,
+    estado_fabricacion,
+    ciudad_fabricacion,
+    numero_cilindros,
+    numero_puertas,
+    peso_kg,
+    capacidad,
+    nuevo,
+    precio_final,
+    intercambio_descuento,
+    financiamiento,
+    kilometraje,
+    fecha_entrega,
+    garantia_tipo
+) AS
+SELECT
+    venta.id,
+    cliente.nombre,
+    cliente.apellido,
+    vendedor.nombre,
+    venta.id_auto,
+    auto.modelo,
+    auto.color,
+    auto.fecha_fabricacion,
+    auto.pais_fabricacion,
+    auto.estado_fabricacion,
+    auto.ciudad_fabricacion,
+    auto.numero_cilindros,
+    auto.numero_puertas,
+    auto.peso_kg,
+    auto.capacidad,
+    auto.nuevo,
+    venta.precio_final,
+    intercambio.valor_estimado,
+    venta.financiamiento,
+    venta.kilometraje,
+    venta.fecha_entrega,
+    venta.garantia_tipo
+    FROM
+        Venta AS venta
+        INNER JOIN
+            Cliente as cliente
+            ON venta.id_cliente = cliente.id
+        INNER JOIN
+            Vendedor AS vendedor
+            ON venta.id_vendedor = vendedor.id
+        INNER JOIN
+            Auto as auto
+            ON venta.id_auto = Auto.id
+        LEFT OUTER JOIN
+            Intercambio AS intercambio
+            ON venta.id = intercambio.id_venta;
 
 CREATE TABLE Cargo_Licencia(
     id INT NOT NULL PRIMARY KEY,
