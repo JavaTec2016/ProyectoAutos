@@ -18,7 +18,7 @@ public class Reportador {
     public void cargarReporte(String ruta, HashMap<String,Object> mapa, Connection conexion) throws JRException {
         path = ruta;
         System.out.println("Cargando...");
-        design = JRXmlLoader.load(path);
+        design = JRXmlLoader.load(getClass().getResourceAsStream(path));
         System.out.println(design);
         report = JasperCompileManager.compileReport(design);
         print = JasperFillManager.fillReport(report, mapa, conexion);
@@ -35,7 +35,7 @@ public class Reportador {
     public static String reportePath(String nombre, boolean compilado){
         String extension = ".jrxml";
         if(compilado) extension = ".jasper";
-        return "src/assets/Reportes/"+nombre+extension;
+        return "/assets/Reportes/"+nombre+extension;
     }
     public void verFactura(Integer id_venta, Connection connection) throws JRException {
         HashMap<String , Object> m = crearPropiedades(new String[]{"id_venta"}, new Object[]{id_venta});
