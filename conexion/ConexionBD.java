@@ -210,7 +210,7 @@ public class ConexionBD {
      * Obtiene la conexion a BD
      * @return objeto de conexion
      */
-    private static Connection getConexion() {
+    public static Connection getConexion() {
         return conexion;
     }
 

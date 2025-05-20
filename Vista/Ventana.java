@@ -4,10 +4,10 @@ import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
 import FormTools.FormHook;
 import Instalador.Config;
-import Instalador.DB2Ejecutor;
 import Modelo.*;
 import conexion.ConexionBD;
 import controlador.DAO;
+import net.sf.jasperreports.engine.JRException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,12 +34,41 @@ public class Ventana extends JFrame {
         agregarMenu();
         menu.setVisible(false);
         menuReporte = menuOpcion("Reportes");
-        reporteFactura = opcionItem("Facturas..", e->{
-
+        menuVistas = menuOpcion("Vistas");
+        menuEstadisticas = menuOpcion("Estadísticas");
+        reporteFactura = opcionItem("Facturar..", e->{
+            new PopupFactura().setVisible(true);
         });
+
+        menuVistas.add(opcionItem("Autos disponibles", e -> {
+            //cambiarABCC pa la vista
+        }));
+        menuVistas.add(opcionItem("Modificaciones seleccionadas", e -> {
+            try {
+                cambiarAABCC(Opciones_Activas.class.getSimpleName());
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }));
+
+        menuEstadisticas.add(opcionItem("Modelos más vendidos", e -> {
+            ///JFreeChart con los modelos basados en Datos_Venta
+        }));
+        menuEstadisticas.add(opcionItem("Modificaciones más vendidas", e -> {
+            ///JFreeChart con los modelos basados en Datos_Venta
+        }));
+        menuEstadisticas.add(opcionItem("Referencias más populares", e -> {
+            ///JFreeChart con graficos basados en Cliente
+        }));
 
         menuReporte.add(reporteFactura);
         menu.add(menuReporte);
+        menu.add(menuVistas);
+        menu.add(menuEstadisticas);
 
         setSize(500, 500);
 
@@ -110,7 +139,6 @@ public class Ventana extends JFrame {
                 panelError("Usuario o contraseña incorrectos", "Autenticación fallida");
                 return;
             };
-
             cambiarAPrincipal(ConexionBD.getConector().getUsr());
         });
     }
@@ -124,6 +152,7 @@ public class Ventana extends JFrame {
         principal = new PanelPrincipal(usr);
         configurarbtnLogout();
         configurarBotonesPrincipal();
+        menu.setVisible(true);
         add(principal.componente, "principal");
         layout.show(getContentPane(), "principal");
         revalidate();
@@ -141,6 +170,7 @@ public class Ventana extends JFrame {
             configurarLogin();
             add(ventanaLogin.componente, "login");
         }
+        menu.setVisible(false);
         layout.show(getContentPane(), "login");
         revalidate();
     }
@@ -155,6 +185,7 @@ public class Ventana extends JFrame {
         control.setBackAccion(e -> {
             cambiarAPrincipal(ConexionBD.getConector().getUsr());
         });
+
         add(control.ventana.componente, "ABCC");
         layout.show(getContentPane(), "ABCC");
         revalidate();
@@ -224,6 +255,7 @@ public class Ventana extends JFrame {
             public void run(Object... data) {
                 try {
                     ConexionBD.getConector().cerrarConexion();
+                    menu.setVisible(false);
                     layout.show(getContentPane(), "login");
                 } catch (SQLException ex) {
                     System.out.println("Error al cerrar sesion: ");
@@ -249,8 +281,7 @@ public class Ventana extends JFrame {
     }
     public static void main(String[] args) throws IOException, InterruptedException {
         boolean cambios = ConexionBD.getConector().autoInstalar();
-        DB2Ejecutor.instalarBasesSencillo();
-        if(true){
+        if(cambios){
             try {
                 ConexionBD.getConector().abrirConexion(Config.USER, Config.PASS, Userio.class.getSimpleName());
                 DAO.d.agregar(new Userio("admin", "admin", true, true, true));
@@ -270,6 +301,7 @@ public class Ventana extends JFrame {
         ModeloBD.registrarModelos();
         SwingUtilities.invokeLater(() -> {
             Ventana v = new Ventana();
+
         });
     }
 }

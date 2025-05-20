@@ -511,7 +511,7 @@ public class FormHook {
      * @param regex el regex a compilar
      * @return Caja de texto con eventos configurados
      */
-    static JComponent makeRestrictedTextField(String regex){
+    public static JTextField makeRestrictedTextField(String regex){
 
         JTextField txt = new JTextField();
 

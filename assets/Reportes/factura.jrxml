@@ -1,0 +1,526 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="factura" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="fded47ac-7836-489b-9acf-63c2fb651cab">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="db2 prueba"/>
+	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+		<conditionalStyle backcolor="#E3E3E3">
+			<conditionExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()%2==0)]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<dataset name="datasetVenta" uuid="0a387262-2754-476d-933c-1297511ca87b">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="db2 prueba"/>
+		<parameter name="venta" class="java.lang.Integer">
+			<description><![CDATA[venta]]></description>
+		</parameter>
+		<query language="SQL"><![CDATA[SELECT * FROM Datos_Venta WHERE ID_VENTA = 1]]></query>
+		<field name="ID_VENTA" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="ID_VENTA"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_VENTA"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="NOMBRE_CLIENTE" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="NOMBRE_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.label" value="NOMBRE_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="APELLIDO_CLIENTE" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="APELLIDO_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.label" value="APELLIDO_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="NOMBRE_VENDEDOR" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="NOMBRE_VENDEDOR"/>
+			<property name="com.jaspersoft.studio.field.label" value="NOMBRE_VENDEDOR"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="ID_AUTO" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="ID_AUTO"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_AUTO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="MODELO" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="MODELO"/>
+			<property name="com.jaspersoft.studio.field.label" value="MODELO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="COLOR" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="COLOR"/>
+			<property name="com.jaspersoft.studio.field.label" value="COLOR"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="FECHA_FABRICACION" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.name" value="FECHA_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.label" value="FECHA_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="PAIS_FABRICACION" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="PAIS_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.label" value="PAIS_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="ESTADO_FABRICACION" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="ESTADO_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.label" value="ESTADO_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="CIUDAD_FABRICACION" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="CIUDAD_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.label" value="CIUDAD_FABRICACION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="NUMERO_CILINDROS" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="NUMERO_CILINDROS"/>
+			<property name="com.jaspersoft.studio.field.label" value="NUMERO_CILINDROS"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="NUMERO_PUERTAS" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="NUMERO_PUERTAS"/>
+			<property name="com.jaspersoft.studio.field.label" value="NUMERO_PUERTAS"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="PESO_KG" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="PESO_KG"/>
+			<property name="com.jaspersoft.studio.field.label" value="PESO_KG"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="CAPACIDAD" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="CAPACIDAD"/>
+			<property name="com.jaspersoft.studio.field.label" value="CAPACIDAD"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="NUEVO" class="java.lang.Boolean">
+			<property name="com.jaspersoft.studio.field.name" value="NUEVO"/>
+			<property name="com.jaspersoft.studio.field.label" value="NUEVO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="PRECIO_FINAL" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.name" value="PRECIO_FINAL"/>
+			<property name="com.jaspersoft.studio.field.label" value="PRECIO_FINAL"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="INTERCAMBIO_DESCUENTO" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.name" value="INTERCAMBIO_DESCUENTO"/>
+			<property name="com.jaspersoft.studio.field.label" value="INTERCAMBIO_DESCUENTO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="FINANCIAMIENTO" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="FINANCIAMIENTO"/>
+			<property name="com.jaspersoft.studio.field.label" value="FINANCIAMIENTO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="KILOMETRAJE" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="KILOMETRAJE"/>
+			<property name="com.jaspersoft.studio.field.label" value="KILOMETRAJE"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="FECHA_ENTREGA" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.name" value="FECHA_ENTREGA"/>
+			<property name="com.jaspersoft.studio.field.label" value="FECHA_ENTREGA"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<field name="GARANTIA_TIPO" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="GARANTIA_TIPO"/>
+			<property name="com.jaspersoft.studio.field.label" value="GARANTIA_TIPO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+		</field>
+		<group name="ID_VENTA">
+			<expression><![CDATA[$F{ID_VENTA}]]></expression>
+		</group>
+	</dataset>
+	<dataset name="datasetOpciones" uuid="ddf4146a-8107-49e7-b13e-0b911d5213f6">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="db2 prueba"/>
+		<parameter name="id_auto" class="java.lang.Integer">
+			<description><![CDATA[id del auto]]></description>
+		</parameter>
+		<query language="SQL"><![CDATA[SELECT *FROM Opciones_Activas WHERE ID_AUTO = $P{id_auto}]]></query>
+		<field name="ID_ADORNO" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="ID_ADORNO"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_ADORNO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<field name="ID_CLIENTE" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="ID_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_CLIENTE"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<field name="ID_OPCION" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="ID_OPCION"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_OPCION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<field name="ID_AUTO" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.name" value="ID_AUTO"/>
+			<property name="com.jaspersoft.studio.field.label" value="ID_AUTO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<field name="OPCION" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.name" value="OPCION"/>
+			<property name="com.jaspersoft.studio.field.label" value="OPCION"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<field name="PRECIO" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.name" value="PRECIO"/>
+			<property name="com.jaspersoft.studio.field.label" value="PRECIO"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="OPCIONES_ACTIVAS"/>
+		</field>
+		<group name="OPCION">
+			<expression><![CDATA[$F{OPCION}]]></expression>
+		</group>
+	</dataset>
+	<parameter name="id_venta" class="java.lang.Integer">
+		<description><![CDATA[id de la venta a facturar]]></description>
+	</parameter>
+	<query language="SQL"><![CDATA[SELECT * FROM Datos_Venta WHERE ID_VENTA = $P{id_venta}]]></query>
+	<field name="ID_VENTA" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="ID_VENTA"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_VENTA"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="NOMBRE_CLIENTE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="NOMBRE_CLIENTE"/>
+		<property name="com.jaspersoft.studio.field.label" value="NOMBRE_CLIENTE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="APELLIDO_CLIENTE" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="APELLIDO_CLIENTE"/>
+		<property name="com.jaspersoft.studio.field.label" value="APELLIDO_CLIENTE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="NOMBRE_VENDEDOR" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="NOMBRE_VENDEDOR"/>
+		<property name="com.jaspersoft.studio.field.label" value="NOMBRE_VENDEDOR"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="ID_AUTO" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="ID_AUTO"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_AUTO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="MODELO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="MODELO"/>
+		<property name="com.jaspersoft.studio.field.label" value="MODELO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="COLOR" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="COLOR"/>
+		<property name="com.jaspersoft.studio.field.label" value="COLOR"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="FECHA_FABRICACION" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="FECHA_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.label" value="FECHA_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="PAIS_FABRICACION" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="PAIS_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.label" value="PAIS_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="ESTADO_FABRICACION" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ESTADO_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.label" value="ESTADO_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="CIUDAD_FABRICACION" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="CIUDAD_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.label" value="CIUDAD_FABRICACION"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="NUMERO_CILINDROS" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="NUMERO_CILINDROS"/>
+		<property name="com.jaspersoft.studio.field.label" value="NUMERO_CILINDROS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="NUMERO_PUERTAS" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="NUMERO_PUERTAS"/>
+		<property name="com.jaspersoft.studio.field.label" value="NUMERO_PUERTAS"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="PESO_KG" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="PESO_KG"/>
+		<property name="com.jaspersoft.studio.field.label" value="PESO_KG"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="CAPACIDAD" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="CAPACIDAD"/>
+		<property name="com.jaspersoft.studio.field.label" value="CAPACIDAD"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="NUEVO" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="NUEVO"/>
+		<property name="com.jaspersoft.studio.field.label" value="NUEVO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="PRECIO_FINAL" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="PRECIO_FINAL"/>
+		<property name="com.jaspersoft.studio.field.label" value="PRECIO_FINAL"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="INTERCAMBIO_DESCUENTO" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="INTERCAMBIO_DESCUENTO"/>
+		<property name="com.jaspersoft.studio.field.label" value="INTERCAMBIO_DESCUENTO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="FINANCIAMIENTO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="FINANCIAMIENTO"/>
+		<property name="com.jaspersoft.studio.field.label" value="FINANCIAMIENTO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="KILOMETRAJE" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="KILOMETRAJE"/>
+		<property name="com.jaspersoft.studio.field.label" value="KILOMETRAJE"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="FECHA_ENTREGA" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="FECHA_ENTREGA"/>
+		<property name="com.jaspersoft.studio.field.label" value="FECHA_ENTREGA"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<field name="GARANTIA_TIPO" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="GARANTIA_TIPO"/>
+		<property name="com.jaspersoft.studio.field.label" value="GARANTIA_TIPO"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DATOS_VENTA"/>
+	</field>
+	<group name="ID_VENTA">
+		<expression><![CDATA[$F{ID_VENTA}]]></expression>
+	</group>
+	<background splitType="Stretch"/>
+	<title height="59" splitType="Stretch">
+		<element kind="staticText" uuid="cd829c17-f424-40ad-93cc-caa792699581" x="0" y="17" width="559" height="30" fontName="SansSerif" fontSize="18.0" bold="true" italic="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Autos Amistosos]]></text>
+		</element>
+	</title>
+	<pageHeader height="54" splitType="Stretch">
+		<element kind="line" uuid="edc1f6ab-c3ce-4bf9-b3a1-8a009a239958" x="0" y="10" width="559" height="1"/>
+		<element kind="staticText" uuid="1870c1b8-ceaa-4550-9aa2-5809b267be22" x="0" y="14" width="559" height="30" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Factura de Venta]]></text>
+		</element>
+		<element kind="line" uuid="0d3d56f3-7362-46d5-ac7e-a6e22bd50823" x="-2" y="44" width="559" height="1"/>
+	</pageHeader>
+	<columnHeader height="42" splitType="Stretch">
+		<element kind="staticText" uuid="7463fd58-7ced-4b91-b6b8-08fd3c86accd" x="0" y="7" width="280" height="30" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Detalles Generales]]></text>
+		</element>
+		<element kind="staticText" uuid="6afeb5ea-317c-4a5d-9bb9-7e18d94158e9" x="280" y="7" width="276" height="30" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Detalles del Vehículo]]></text>
+		</element>
+		<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+	</columnHeader>
+	<detail>
+		<band height="490" splitType="Stretch">
+			<element kind="component" uuid="8fcc57c0-a2e5-4743-9200-8538cf791cda" key="" x="140" y="10" width="130" height="280">
+				<component kind="list">
+					<datasetRun uuid="4ca2e486-87cd-4843-814e-74282eec6afc" subDataset="datasetVenta">
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<contents height="280" width="130">
+						<element kind="textField" uuid="4fa5c209-ac1b-4844-8e44-a53fd23840c7" x="0" y="0" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{ID_VENTA}]]></expression>
+						</element>
+						<element kind="textField" uuid="e2bb8848-0816-4d08-9657-7ee9a8f548ab" x="0" y="35" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{NOMBRE_CLIENTE}]]></expression>
+						</element>
+						<element kind="textField" uuid="2fc67af7-7acc-494a-afe8-2d7da23065eb" x="0" y="70" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{APELLIDO_CLIENTE}]]></expression>
+						</element>
+						<element kind="textField" uuid="74299e8e-ded7-4964-8c1c-03f263fe28a4" x="0" y="105" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{NOMBRE_VENDEDOR}]]></expression>
+						</element>
+						<element kind="textField" uuid="da379ae7-7c04-40a9-8858-8c783a898ae3" x="0" y="140" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{PRECIO_FINAL}]]></expression>
+						</element>
+						<element kind="textField" uuid="332512e5-0935-4b17-8a57-20f51f993be0" x="0" y="175" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{GARANTIA_TIPO}]]></expression>
+						</element>
+						<element kind="textField" uuid="c53b62a6-1b84-4c51-b1d3-a17601f5f0fc" x="0" y="210" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{FINANCIAMIENTO}]]></expression>
+						</element>
+						<element kind="textField" uuid="f0bc4df7-bd64-4cac-9c76-f51fed3a46d6" x="0" y="245" width="130" height="35" hTextAlign="Right">
+							<expression><![CDATA[$F{FECHA_ENTREGA}]]></expression>
+						</element>
+					</contents>
+				</component>
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+			</element>
+			<element kind="staticText" uuid="60ff3f62-095d-469d-8d1f-12a33d0856db" x="0" y="10" width="140" height="35">
+				<text><![CDATA[Número de venta]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="405e4f32-8408-4e28-ab06-e66e2cc380ac" x="0" y="45" width="140" height="35">
+				<text><![CDATA[Nombre]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="3cbb2382-31b8-4715-99c1-443d2121b4e4" x="0" y="80" width="140" height="35">
+				<text><![CDATA[Apellido]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="74b20451-eec5-4965-b778-9a86b429aa7b" x="0" y="115" width="140" height="35">
+				<text><![CDATA[Vendedor]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="3dca62d0-2665-4a16-a969-b4cf2eec0e03" x="0" y="150" width="140" height="35">
+				<text><![CDATA[Precio final]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="fd47759a-2051-4606-a1f9-2a05a9a66453" x="0" y="185" width="140" height="35">
+				<text><![CDATA[Garantía]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="daaaceaf-3440-454d-aa45-031c4cbdda53" x="0" y="220" width="140" height="35">
+				<text><![CDATA[Financiamiento]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="d0f00f70-d2e4-473d-91cf-82b4648db932" x="0" y="255" width="140" height="35">
+				<text><![CDATA[Fecha de entrega del vehículo]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="line" uuid="2523216e-2712-4dab-aecf-59f4dbfbd06a" x="0" y="296" width="559" height="1"/>
+			<element kind="staticText" uuid="d86be79d-cabb-4d6e-91bf-567ed4f30218" x="-2" y="299" width="559" height="30" hTextAlign="Center" vTextAlign="Middle">
+				<text><![CDATA[Modificaciones adicionales]]></text>
+			</element>
+			<element kind="component" uuid="b02324b4-0e25-4230-bbc8-0ebb1618fe2f" x="179" y="330" width="200" height="160">
+				<component kind="table">
+					<datasetRun uuid="a1724043-0e7d-4d77-9118-bd8aa2401e8c" subDataset="datasetOpciones">
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						<parameter name="id_auto">
+							<expression><![CDATA[$F{ID_AUTO}]]></expression>
+						</parameter>
+					</datasetRun>
+					<column kind="single" uuid="c2f3451a-f1e0-4839-ab4d-5e3a40eb9fcf" width="100">
+						<tableHeader height="30" style="Table_TH">
+							<element kind="staticText" uuid="23426a8c-204a-4bc9-80ad-b28ec61c73dd" x="0" y="0" width="100" height="30" hTextAlign="Left" vTextAlign="Middle">
+								<text><![CDATA[Modificación]]></text>
+							</element>
+						</tableHeader>
+						<detailCell height="30" style="Table_TD">
+							<element kind="textField" uuid="7f0e2544-8370-4547-b5c7-49683d443bb7" x="0" y="0" width="100" height="30">
+								<expression><![CDATA[$F{OPCION}]]></expression>
+							</element>
+						</detailCell>
+					</column>
+					<column kind="single" uuid="9ef2bbab-d83e-4c3a-8cba-c78f0877feaf" width="100">
+						<tableHeader height="30" style="Table_TH">
+							<element kind="staticText" uuid="2efc37cc-c373-498e-b358-0e8b98a3c447" x="0" y="0" width="100" height="30" vTextAlign="Middle">
+								<text><![CDATA[Precio adicional]]></text>
+							</element>
+						</tableHeader>
+						<detailCell height="30" style="Table_TD">
+							<element kind="textField" uuid="9e3af63b-01af-4851-93b9-163e874a6e21" x="0" y="0" width="100" height="30">
+								<expression><![CDATA[$F{PRECIO}]]></expression>
+							</element>
+						</detailCell>
+					</column>
+				</component>
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+				<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+				<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+				<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+			</element>
+			<element kind="line" uuid="e9099c35-18bc-4eea-aada-a9fa40ee2fd5" x="280" y="-31" width="1" height="311"/>
+			<element kind="component" uuid="3ce6b93d-f325-4eb4-883a-34f7a925a4ad" x="420" y="10" width="136" height="280">
+				<component kind="list">
+					<datasetRun uuid="d1b1e23f-d42a-4273-9080-f9cf96aa1055" subDataset="datasetVenta">
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<contents height="280" width="136">
+						<element kind="textField" uuid="0482549c-1754-4622-9e8e-1b0290c56148" x="0" y="0" width="136" height="27">
+							<expression><![CDATA[$F{ID_AUTO}]]></expression>
+						</element>
+						<element kind="textField" uuid="fe1a53ea-8834-4ec7-b6c6-991010e7cbf3" x="0" y="27" width="136" height="23">
+							<expression><![CDATA[$F{MODELO}]]></expression>
+						</element>
+						<element kind="textField" uuid="e7a709d1-5ee2-4ff8-af0b-6b2eb68a35dc" x="0" y="50" width="136" height="23">
+							<expression><![CDATA[$F{COLOR}]]></expression>
+						</element>
+						<element kind="textField" uuid="efed4ad2-eac1-4b68-ba0e-d0d79169298f" x="0" y="73" width="136" height="23">
+							<expression><![CDATA[$F{FECHA_FABRICACION}]]></expression>
+						</element>
+						<element kind="textField" uuid="22ea8347-063b-428c-a883-e549939a5521" x="0" y="96" width="136" height="23">
+							<expression><![CDATA[$F{PAIS_FABRICACION}]]></expression>
+						</element>
+						<element kind="textField" uuid="d8635d27-eed8-4347-a7ee-e435be042deb" x="0" y="119" width="136" height="23">
+							<expression><![CDATA[$F{ESTADO_FABRICACION}]]></expression>
+						</element>
+						<element kind="textField" uuid="b63441bf-88b0-49ff-8616-288800e21b0f" x="0" y="142" width="136" height="23">
+							<expression><![CDATA[$F{CIUDAD_FABRICACION}]]></expression>
+						</element>
+						<element kind="textField" uuid="776d300c-cdb1-4b32-8678-fe243a3a7e95" x="0" y="165" width="136" height="23">
+							<expression><![CDATA[$F{NUMERO_CILINDROS}]]></expression>
+						</element>
+						<element kind="textField" uuid="1e6d5545-4258-4c70-9f84-73868b713a6a" x="0" y="188" width="136" height="23">
+							<expression><![CDATA[$F{NUMERO_PUERTAS}]]></expression>
+						</element>
+						<element kind="textField" uuid="5e8a8493-a720-483c-917c-35040bbf3a97" x="0" y="211" width="136" height="23">
+							<expression><![CDATA[$F{PESO_KG}]]></expression>
+						</element>
+						<element kind="textField" uuid="60fedf6e-455c-460f-8032-4647b2e2f3e3" x="0" y="234" width="136" height="23">
+							<expression><![CDATA[$F{CAPACIDAD}]]></expression>
+						</element>
+						<element kind="textField" uuid="52be54a5-05f6-4c3b-9963-e275e6a53b70" x="0" y="257" width="136" height="23">
+							<expression><![CDATA[$F{NUEVO}]]></expression>
+						</element>
+					</contents>
+				</component>
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+			</element>
+			<element kind="staticText" uuid="74d2437f-c3cb-499d-a67f-37566464530c" x="290" y="171" width="130" height="23">
+				<text><![CDATA[Número de cilindros]]></text>
+			</element>
+			<element kind="staticText" uuid="7c5f5446-f9e6-447b-82b1-fb83f2c9f543" x="290" y="56" width="130" height="23">
+				<text><![CDATA[Color]]></text>
+			</element>
+			<element kind="staticText" uuid="2a7f5f46-9f0a-472f-a83c-79d9fe3904ab" x="290" y="102" width="130" height="23">
+				<text><![CDATA[País de fabricación]]></text>
+			</element>
+			<element kind="staticText" uuid="25ee6420-fdbb-4e46-a8c0-2fb36aa24e43" x="290" y="10" width="130" height="23">
+				<text><![CDATA[ID del vehículo]]></text>
+			</element>
+			<element kind="staticText" uuid="498b1e40-b191-434b-a6c6-8455759e0a80" x="290" y="125" width="130" height="23">
+				<text><![CDATA[Estado de fabricación]]></text>
+			</element>
+			<element kind="staticText" uuid="10a73f09-4976-4e10-98b3-bf4115a0744d" x="290" y="148" width="130" height="23">
+				<text><![CDATA[Ciudad de fabricación]]></text>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
+			<element kind="staticText" uuid="86277bbb-dc6b-4c0b-b1a2-a9bd767424c7" x="290" y="79" width="130" height="23">
+				<text><![CDATA[Fecha de fabricación]]></text>
+			</element>
+			<element kind="staticText" uuid="c565236d-0304-4f43-8cbe-63aa932416d6" x="290" y="33" width="130" height="23">
+				<text><![CDATA[Modelo]]></text>
+			</element>
+			<element kind="staticText" uuid="96fae42e-eed7-4dc0-8787-d1a774d1b787" x="290" y="194" width="130" height="23">
+				<text><![CDATA[Número de puertas]]></text>
+			</element>
+			<element kind="staticText" uuid="fa18d58b-a315-4c63-8c7b-b34361a7a812" x="290" y="217" width="130" height="23">
+				<text><![CDATA[Peso (Kg)]]></text>
+			</element>
+			<element kind="staticText" uuid="2f8feba9-7146-4164-a46a-ebf05826101f" x="290" y="240" width="130" height="23">
+				<text><![CDATA[Capacidad (Kg)]]></text>
+			</element>
+			<element kind="staticText" uuid="ba750d9b-6eef-417c-a43e-a4973eaec6b0" x="290" y="263" width="130" height="23">
+				<text><![CDATA[Nuevo?]]></text>
+			</element>
+		</band>
+	</detail>
+	<columnFooter splitType="Stretch"/>
+	<pageFooter splitType="Stretch"/>
+	<summary splitType="Stretch"/>
+</jasperReport>
