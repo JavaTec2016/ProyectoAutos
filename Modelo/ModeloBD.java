@@ -5,8 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public abstract class ModeloBD implements Registrable {
     static HashMap<String, Class<? extends ModeloBD>> modelos = new HashMap<>();
@@ -180,6 +178,9 @@ public abstract class ModeloBD implements Registrable {
         registrarModelo(Opciones_Activas.class);
         registrarModelo(Venta.class);
         registrarModelo(Cliente_Adorno.class);
+
+        registrarModelo(Datos_Venta_Conteo.class);
+        registrarModelo(Opciones_Activas_Conteo.class);
     }
     public static String formatearMensajeErrorForaneas(String modelo){
         try {

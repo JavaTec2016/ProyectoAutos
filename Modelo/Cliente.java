@@ -131,6 +131,14 @@ public class Cliente extends ModeloBD {
         return apellido;
     }
 
+    public String getFuente_referencia() {
+        return fuente_referencia;
+    }
+
+    public Boolean getEs_potencial() {
+        return es_potencial;
+    }
+
     @Override
     public String getDisplay() {
         return "ID: " + id + ", " + nombre + " " + apellido;

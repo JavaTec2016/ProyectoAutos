@@ -1,10 +1,12 @@
 package controlador;
 
+import FormTools.Extractor;
 import Modelo.ModeloBD;
 import Modelo.Registrable;
 import conexion.ConexionBD;
 
 import javax.xml.transform.Result;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -83,6 +85,35 @@ public class DAO {
         conexion.prepararStatement(sql, val);
         return conexion.ejecutarSQL();
     }
+    public ResultSet consultarGroup(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores, String grupoNombre) throws SQLException {
+        Object[] val = new Object[0];
+        String sql = "SELECT ";
+        if(selecNombres == null) sql += "* ";
+        else{
+            for (String selecNombre : selecNombres) {
+                sql+=selecNombre+", ";
+            }
+            sql = sql.substring(0, sql.length()-2)+" ";
+        }
+        sql += "FROM " + tabla;
+        if(filtroNombres != null && filtroValores != null){
+            val = filtroValores;
+            sql += " WHERE ";
+            String fil = "";
+            for (int i = 0; i < filtroNombres.length; i++) {
+                Object valor = filtroValores[i];
+                String v = "";
+                if(valor instanceof String || valor instanceof Date) v = "'"+valor.toString()+"'";
+                //fil += filtroNombres[i]+"="+v+", ";
+                fil+= filtroNombres[i]+"=? AND ";
+            }
+            fil = fil.substring(0, fil.length()-5);
+            sql = sql+fil;
+        }
+        sql += " GROUP BY "+ grupoNombre;
+        conexion.prepararStatement(sql, val);
+        return conexion.ejecutarSQL();
+    }
     /**
      * Realiza una consulta a la Base de datos, busca coincidencias aproximadas a los filtros.
      * Utiliza LIKE y agrega comodines '%' al final de cada valor a filtrar
@@ -138,6 +169,32 @@ public class DAO {
                 datos[i] = rs.getObject(i+1);
             }
             modelos.add(ModeloBD.instanciar(tabla, datos));
+        }
+        return modelos;
+    }
+    public ArrayList<ModeloBD> obtenerRegistrosGroup(String tabla, Class<? extends Registrable> modelo, String[] selecNombres, String[] filtroNombres, Object[] filtroValores, String grupo) throws SQLException {
+        ResultSet rs = consultarGroup(tabla, selecNombres, filtroNombres, filtroValores, grupo);
+        ArrayList<ModeloBD> modelos = new ArrayList<>();
+
+        String[] argNames = ModeloBD.obtenerCampoNombresDe(modelo);
+        Class[] paramTypes = ModeloBD.obtenerCampoTiposDe(modelo);
+        Object[] args = new Object[argNames.length];
+
+        while (rs.next()){
+            for (int i = 0; i < args.length; i++) {
+                String columna = rs.getMetaData().getColumnName(i+1);
+
+                //si los campos del modelo no coinciden con el resultSet, entonces se pone un nulo
+                if(!columna.equalsIgnoreCase(argNames[i])){
+                    System.out.println("DAO campos irregulares: esperaba '"+argNames[i]+"', recibio '"+columna+"'");
+                    args[i] = null;
+                }else {
+                    args[i] = Extractor.convertir(rs.getObject(i+1).toString(), paramTypes[i]);
+
+                }
+            }
+            System.out.println("DAO Instanciando GROUP:" + Arrays.toString(args));
+            modelos.add(ModeloBD.instanciar(modelo.getSimpleName(), args));
         }
         return modelos;
     }

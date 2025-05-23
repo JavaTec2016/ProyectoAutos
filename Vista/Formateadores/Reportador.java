@@ -1,10 +1,12 @@
-package Vista;
+package Vista.Formateadores;
 
+import Vista.Ventana;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.view.JasperViewer;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.util.HashMap;
 
@@ -17,9 +19,8 @@ public class Reportador {
 
     public void cargarReporte(String ruta, HashMap<String,Object> mapa, Connection conexion) throws JRException {
         path = ruta;
-        System.out.println("Cargando...");
-        design = JRXmlLoader.load(getClass().getResourceAsStream(path));
-        System.out.println(design);
+        InputStream stream = getClass().getResourceAsStream(path);
+        design = JRXmlLoader.load(stream);
         report = JasperCompileManager.compileReport(design);
         print = JasperFillManager.fillReport(report, mapa, conexion);
     }
@@ -49,7 +50,9 @@ public class Reportador {
                 HashMap<String , Object> m = crearPropiedades(new String[]{"id_venta"}, new Object[]{id_venta});
                 try {
                     cargarReporte(reportePath("factura", false), m, connection);
-                } catch (JRException e) {
+                } catch (JRException | RuntimeException e) {
+                    Ventana.panelError(e.getMessage(), "ayuda");
+                    Ventana.panelError(System.getProperty("java.class.path"), "ayuda");
                     throw new RuntimeException(e);
                 }
                 JasperViewer.viewReport(print, false);

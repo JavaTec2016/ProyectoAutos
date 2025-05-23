@@ -2,10 +2,7 @@ package Instalador;
 
 import Lectura.Lector;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,14 +10,17 @@ import java.util.function.Consumer;
 
 public interface DB2Ejecutor {
     ArrayList<String> salida = new ArrayList<>();
-
+    String ruta = "/Instalador/";
     /**
      * Obtiene la ruta de scripts para la instalación de la base de datos
      * @param nombre
      * @return
      */
     static String scriptPath(String nombre){
-        return Lector.getSrcPath().concat("/Instalador/").concat(nombre);
+        return Lector.getSrcPath().concat(ruta).concat(nombre);
+    }
+    static InputStream scriptPathStream(String nombre){
+        return DB2Ejecutor.class.getResourceAsStream("/Instalador/".concat(nombre));
     }
     /**
      * Crea un nuevo {@link ProcessBuilder} para la ejecución de scripts por lotes
@@ -38,7 +38,8 @@ public interface DB2Ejecutor {
      * @return {@link ProcessBuilder} configurado
      */
     private static ProcessBuilder crearDB2Builder(String ...args){
-        ArrayList<String> fullArgs = new ArrayList<>(List.of(new String[]{"cmd.exe", "/c", scriptPath("cargadorDB2.bat")}));
+        System.out.println("\""+scriptPath("cargadorDB2.bat")+"\"");
+        ArrayList<String> fullArgs = new ArrayList<>(List.of(new String[]{"cmd.exe", "/c", "\""+scriptPath("cargadorDB2.bat")+"\""}));
         fullArgs.addAll(Arrays.asList(args));
         ProcessBuilder b = new ProcessBuilder(fullArgs);
         b.inheritIO();

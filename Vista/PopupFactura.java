@@ -1,6 +1,7 @@
 package Vista;
 
 import FormTools.FormHook;
+import Vista.Formateadores.Reportador;
 import conexion.ConexionBD;
 
 import javax.swing.*;

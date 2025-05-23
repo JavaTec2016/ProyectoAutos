@@ -5,9 +5,9 @@ import ErrorHandlin.ErrorHandler;
 import FormTools.FormHook;
 import Instalador.Config;
 import Modelo.*;
+import Vista.Formateadores.Graficador;
 import conexion.ConexionBD;
 import controlador.DAO;
-import net.sf.jasperreports.engine.JRException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,10 +56,30 @@ public class Ventana extends JFrame {
         }));
 
         menuEstadisticas.add(opcionItem("Modelos más vendidos", e -> {
-            ///JFreeChart con los modelos basados en Datos_Venta
+            try {
+                Graficador.makeModelosVendidosChart();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
         }));
         menuEstadisticas.add(opcionItem("Modificaciones más vendidas", e -> {
-            ///JFreeChart con los modelos basados en Datos_Venta
+            try {
+                Graficador.makeModificacionesChart();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
         }));
         menuEstadisticas.add(opcionItem("Referencias más populares", e -> {
             ///JFreeChart con graficos basados en Cliente

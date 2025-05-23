@@ -61,7 +61,7 @@ public class Auto extends ModeloBD {
         return new String[]{"textfield", "decimalfield", "textfield", "combobox", "datefield", "textfield", "textfield", "textfield", "textfield", "textfield", "textfield", "textfield", "checkbox"};
     }
     public static String[][] obtenerEspeciales(){
-        return new String[][]{new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""}};
+        return new String[][]{null,null,null,null,null,null,null,null,null,null,null,null,null};
     }
     public static Integer[] obtenerPrimarias(){
         return new Integer[]{0};

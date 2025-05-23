@@ -6,13 +6,11 @@ import FormTools.FormHook;
 import FormTools.MainButtonHook;
 import FormTools.PanelHook;
 import Modelo.*;
-import conexion.ConexionBD;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
 public class PanelPrincipal extends PanelHook {

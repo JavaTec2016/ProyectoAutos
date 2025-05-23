@@ -6,6 +6,7 @@ import Instalador.DB2Ejecutor;
 import Instalador.Install;
 import Modelo.ModeloBD;
 import Modelo.Userio;
+import Vista.Ventana;
 import com.ibm.db2.jcc.am.Connection;
 import controlador.DAO;
 
@@ -290,6 +291,8 @@ public class ConexionBD {
             abrirConexion(Config.USER, Config.PASS, "Autos");
             cerrarConexion();
         } catch (SQLException e) {
+            Ventana.panelError("Es necesario instalar las bases de datos", "Instalación");
+            Ventana.panelError(DB2Ejecutor.scriptPath(""), "Ruta");
             DB2Ejecutor.instalarBasesSencillo();
             return true;
         }
