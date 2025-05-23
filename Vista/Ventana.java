@@ -4,6 +4,7 @@ import ErrorHandlin.Call;
 import ErrorHandlin.ErrorHandler;
 import FormTools.FormHook;
 import Instalador.Config;
+import Instalador.DB2Ejecutor;
 import Modelo.*;
 import Vista.Formateadores.Graficador;
 import conexion.ConexionBD;
@@ -41,7 +42,15 @@ public class Ventana extends JFrame {
         });
 
         menuVistas.add(opcionItem("Autos disponibles", e -> {
-            //cambiarABCC pa la vista
+            try {
+                cambiarAABCC(Autos_Disponibles.class.getSimpleName());
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
         }));
         menuVistas.add(opcionItem("Modificaciones seleccionadas", e -> {
             try {
@@ -245,6 +254,9 @@ public class Ventana extends JFrame {
         }else
         if(tabla.equals(Cliente_Adorno.class.getSimpleName())){
             refrescarControl(new ABCCCliente_Adorno());
+        }else
+        if(tabla.equals(Autos_Disponibles.class.getSimpleName())){
+            refrescarControl(new ABCCAutos_Disponibles());
         }
     }
 
@@ -318,6 +330,7 @@ public class Ventana extends JFrame {
                 }
             }
         }
+        //DB2Ejecutor.instalarBasesSencillo();
         ModeloBD.registrarModelos();
         SwingUtilities.invokeLater(() -> {
             Ventana v = new Ventana();

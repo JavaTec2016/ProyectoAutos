@@ -176,11 +176,13 @@ public abstract class ModeloBD implements Registrable {
         registrarModelo(Auto_Modelo.class);
         registrarModelo(Auto_Opcion.class);
         registrarModelo(Opciones_Activas.class);
+        registrarModelo(Autos_Disponibles.class);
         registrarModelo(Venta.class);
         registrarModelo(Cliente_Adorno.class);
 
         registrarModelo(Datos_Venta_Conteo.class);
         registrarModelo(Opciones_Activas_Conteo.class);
+
     }
     public static String formatearMensajeErrorForaneas(String modelo){
         try {

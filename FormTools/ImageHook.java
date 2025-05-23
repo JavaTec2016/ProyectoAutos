@@ -17,6 +17,7 @@ public class ImageHook extends JPanel {
         setImagen(ruta);
         if(imagen == null) return;
         setPreferredSize(new Dimension(imagen.getWidth(this), imagen.getHeight(this)));
+        setMinimumSize(new Dimension(imagen.getWidth(this), imagen.getHeight(this)));
     }
     public void setImagen(Image i){
         imagen = i;

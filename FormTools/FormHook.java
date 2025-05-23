@@ -154,16 +154,37 @@ public class FormHook {
             }
         });
     }
+    /**
+     * Obtiene un campo del formulario
+     * @param nombre nombre del campo
+     * @return {@link CampoHook} campo del formulario
+     */
     public CampoHook getCampo(String nombre){
         return campos.get(nombre);
     }
+    /**
+     * Reemplaza el input actual del campo por otro
+     * @param nombre nombre del campo a modificar
+     * @param input nuevo input del campo
+     */
     public void setInput(String nombre, CampoHook input){
         getCampo(nombre).removeChild("input");
         getCampo(nombre).appendChild("input", input);
     }
+
+    /**
+     * Obtiene el label de un campo del formulario
+     * @param campo nombre del campo del cual se desea el label
+     * @return {@link CampoHook} del label
+     */
     public CampoHook getLabel(String campo){
         return campos.get(campo).getChild("label");
     }
+    /**
+     * Obtiene el input de un campo del formulario
+     * @param campo nombre del campo del cual se desea el input
+     * @return {@link CampoHook} del input
+     */
     public CampoHook getInput(String campo){
         return campos.get(campo).getChild("input");
     }
@@ -780,19 +801,6 @@ public class FormHook {
             }
         });
     }
-    /**
-     * Crea un nuevo panel con gridbag layout con los componentes dados, incluye botones de eliminar y editar
-     * @param Id id del registro
-     * @param components componentes a mostrar en el registro,
-     * @param nombreDatos id de cada campo que muestra uno de los components dados
-     * @param distribucion cuantas celdas se le asignan a cada registro
-     * @param celdas número total de celdas en el registro
-     * @param tamanio tamaño vertical del registro
-     * @return panel configurado con información
-     */
-    public static PanelHook crearRegistroGridBag(String Id, JComponent[] components, String[] nombreDatos, int[] distribucion, int celdas, int tamanio){
-        return crearRegistroGridBag(Id, crearHooks(components), nombreDatos, distribucion, celdas, tamanio);
-    }
 
     /**
      * Envuelve los componentes en CampoHooks
@@ -822,15 +830,6 @@ public class FormHook {
         reg.asociado = asociado;
         return reg;
     }
-
-    /**
-     * Crea un panel vertical para enlistar registros
-     * @return panel vertical
-     */
-    public static ScrollHook crearScroll() {
-        PanelHook p = makeVerticalListPanel();
-        return new ScrollHook(p);
-    }
     /**
      * Crea un panel vertical con filas específicas para enlistar registros
      * @return panel vertical
@@ -838,15 +837,6 @@ public class FormHook {
     public static ScrollHook crearScroll(int rows) {
         PanelHook p = makeVerticalListPanel(rows);
         return new ScrollHook(p);
-    }
-    /**
-     * Crea un panel vertical con dimenisones y filas específicas para enlistar registros
-     * @return panel vertical
-     */
-    public static ScrollHook crearScroll(int x, int y, int w, int h, int rowsVisible){
-        ScrollHook s = crearScroll(rowsVisible);
-        s.setBounds(x,y,w,h);
-        return s;
     }
     /**
      * Crea un GridbagConstraint para componentes verticales
@@ -1178,14 +1168,11 @@ public class FormHook {
      * @return lista de los registros cargados en la tabla
      */
     public static ArrayList<Registro> obtenerRegistros(ScrollHook tabla){
-        ArrayList<Registro> regs = new ArrayList<>();
-        tabla.getView().children.forEach(new BiConsumer<String, CampoHook>() {
-            @Override
-            public void accept(String id, CampoHook registro) {
-                regs.add((Registro)registro);
-            }
+        ArrayList<Registro> registros = new ArrayList<>();
+        tabla.getView().children.forEach((id, registro) -> {
+            registros.add((Registro) registro);
         });
-        return regs;
+        return registros;
     }
 
     /**

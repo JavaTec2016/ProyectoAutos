@@ -76,7 +76,7 @@ CREATE TABLE Cliente_Adorno (
 CREATE INDEX index_id_adorno_cliente ON Cliente_Adorno(id_cliente);
 CREATE INDEX index_id_opcion ON Cliente_Adorno(id_opcion);
 
-CREATE VIEW Opciones_Activas (
+CREATE OR REPLACE VIEW Opciones_Activas (
     id_adorno,
     id_cliente,
     id_opcion,
@@ -87,7 +87,7 @@ CREATE VIEW Opciones_Activas (
 SELECT
     a.id,
     a.id_cliente,
-    o.opcion,
+    o.id,
     o.id_auto,
     o.opcion,
     o.precio

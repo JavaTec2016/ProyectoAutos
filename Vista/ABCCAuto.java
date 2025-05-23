@@ -24,12 +24,7 @@ public class ABCCAuto extends ABCC{
             Ventana.panelError("El modelo de auto no existe en la base de datos", "Modelo desconocido");
         });
 
-        JComboBox<String> modelos = (JComboBox<String>) getComboBox("modelo");
-        ArrayList<ModeloBD> modeloOpciones = realizarConsulta(Auto_Modelo.class.getSimpleName(), null, null, null);
-        modelos.addItem(null);
-        modeloOpciones.forEach(modeloBD -> {
-            modelos.addItem(((Auto_Modelo)modeloBD).getNombre());
-        });
+        comboBoxOpciones("modelo", Auto_Modelo.class.getSimpleName(), null);
 
     }
 }

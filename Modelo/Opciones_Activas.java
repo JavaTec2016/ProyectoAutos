@@ -43,8 +43,11 @@ public class Opciones_Activas extends ModeloBD {
     public static Integer[] obtenerUmbrales(){
         return new Integer[]{0, 0, 0, 0, 0, 1};
     }
+    public static Boolean[] obtenerNoNulos(){
+        return new Boolean[]{false, false, false, false, false, false};
+    }
     public static String[] obtenerCamposComponentes(){
-        return new String[]{"textfield", "textfield", "textfield", "textfield", "textfield", "decimalfield"};
+        return new String[]{"listhook", "listhook", "listhook", "listhook", "textfield", "decimalfield"};
     }
     public static String[][] obtenerEspeciales(){
         return new String[][]{new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""},new String[]{""}};

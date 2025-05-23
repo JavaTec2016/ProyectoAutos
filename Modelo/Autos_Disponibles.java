@@ -39,7 +39,7 @@ public class Autos_Disponibles extends ModeloBD {
         return new Boolean[]{false, false, false, false};
     }
     public static String[] obtenerCamposComponentes(){
-        return new String[]{"","","",""};
+        return new String[]{"listhook","decimalfield","combobox","datefield"};
     }
     public static String[][] obtenerEspeciales(){
         return new String[][]{null,null,null,null};

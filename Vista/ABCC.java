@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ABCC extends JPanel{
     ArrayList<String> selecNombres = null;
@@ -79,6 +80,40 @@ public class ABCC extends JPanel{
         return (ListHook<Object, Object>)(formulario.form.getInput(campoNombre).componente);
     }
 
+    /**
+     * Itera todos los registros de la tabla, realizando una acción para cada uno
+     * @param consumer Accion a realizar para cada registro
+     */
+    public void porCadaRegistro(Consumer<Registro> consumer){
+        FormHook.obtenerRegistros(scroll).forEach(consumer);
+    }
+
+    /**
+     * Establece la visibilidad del botón "Agregar"
+     * @param estado estado de visibilidad
+     */
+    public void setVisibleAgregar(boolean estado){
+        btnAgregar.componente.setVisible(estado);
+    }
+
+    /**
+     * Activa o desactiva la visibilidad del botón "Editar" de cada registro de la tabla
+     * @param estado estado de visibilidad para todos los registros
+     */
+    public void setRegistrosEditables(boolean estado){
+        porCadaRegistro(registro -> {
+            registro.btnEditar.setVisible(estado);
+        });
+    }
+    /**
+     * Activa o desactiva la visibilidad del botón "Eliminar" de cada registro de la tabla
+     * @param estado estado de visibilidad para todos los registros
+     */
+    public void setRegistrosEliminables(boolean estado){
+        porCadaRegistro(registro -> {
+            registro.btnEliminar.setVisible(estado);
+        });
+    }
     /**
      * Obtiene el {@link JComboBox} de un campo del formulario
      * @param campoNombre nombre del campo
@@ -426,6 +461,35 @@ public class ABCC extends JPanel{
             e.printStackTrace();
         }
     }
+    /**
+     * Realiza una consulta a la tabla con el nombre especificado, agregando cada registro a un {@link JComboBox} del formulario.
+     * Agrega cada registro utilizando su campo primario.
+     * @param campo nombre del {@link JComboBox}
+     * @param name nombre de la tabla a consultar
+     * @param nulo Valor de la opción nula
+     */
+    protected void comboBoxOpciones(String campo, String name, Object nulo){
+        JComboBox<Object> modelos = (JComboBox<Object>) getComboBox(campo);
+        ArrayList<ModeloBD> registros = realizarConsulta(name, null, null, null);
+        modelos.addItem(nulo);
+        registros.forEach(modelo -> {
+            try {
+                Object[] datos = modelo.obtenerDatos();
+                datos = ModeloBD.dePrimarias(name, datos);
+                modelos.addItem(datos[0]);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    /**
+     * Realiza una consulta a la tabla con el nombre especificado, agregando registro uno a un {@link ListHook} del formulario.
+     * Agrega cada registro utilizando su campo primario como llave y su {@link ModeloBD#getDisplay()} como texto a mostrar.
+     * @param campo nombre del {@link ListHook}
+     * @param name nombre de la tabla a consultar
+     * @param nulo texto de la opción con valor nulo
+     */
     protected void listHookOciones( String campo, String name, String nulo){
         ListHook<Integer, String> lista = (ListHook<Integer, String>) getListHook(campo);
         ArrayList<ModeloBD> registros = realizarConsulta(name, null, null, null);
@@ -436,11 +500,7 @@ public class ABCC extends JPanel{
                 datos = ModeloBD.dePrimarias(name, datos);
                 System.out.println(Arrays.toString(datos) +","+ modelo.getDisplay());
                 lista.addItem((Integer) datos[0], modelo.getDisplay());
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchMethodException e) {
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         });
