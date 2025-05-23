@@ -180,6 +180,7 @@ public class Ventana extends JFrame {
         if(principal != null) remove(principal.componente);
         principal = new PanelPrincipal(usr);
         configurarbtnLogout();
+        configurarbtnUsuarios();
         configurarBotonesPrincipal();
         menu.setVisible(true);
         add(principal.componente, "principal");
@@ -282,29 +283,53 @@ public class Ventana extends JFrame {
      * Configura la acción del boton de cierre de sesión para cerrar la conexión y cambiar la pantalla al login
      */
     public void configurarbtnLogout(){
-        principal.setLogoutAccion(new Call() {
-            @Override
-            public void run(Object... data) {
-                try {
-                    ConexionBD.getConector().cerrarConexion();
-                    menu.setVisible(false);
-                    layout.show(getContentPane(), "login");
-                } catch (SQLException ex) {
-                    System.out.println("Error al cerrar sesion: ");
-                    if(ex.getErrorCode() == ErrorHandler.ERR_TRANSACTION_PENDING){
-                        int accion = panelCambios("Hay cambios sin guardar, desea descartarlos?", "Cambios sin guardar");
+        principal.setLogoutAccion(data -> {
+            try {
+                ConexionBD.getConector().cerrarConexion();
+                menu.setVisible(false);
+                layout.show(getContentPane(), "login");
+            } catch (SQLException ex) {
+                System.out.println("Error al cerrar sesion: ");
+                if(ex.getErrorCode() == ErrorHandler.ERR_TRANSACTION_PENDING){
+                    int accion = panelCambios("Hay cambios sin guardar, desea descartarlos?", "Cambios sin guardar");
 
-                        try {
-                            if(accion == 0) ConexionBD.getConector().commit();
-                            if(accion == 1) ConexionBD.getConector().rollback();
-                            ConexionBD.getConector().cerrarConexion();
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-
+                    try {
+                        if(accion == 0) ConexionBD.getConector().commit();
+                        if(accion == 1) ConexionBD.getConector().rollback();
+                        ConexionBD.getConector().cerrarConexion();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
                     }
-                    ex.printStackTrace();
+
                 }
+                ex.printStackTrace();
+            }
+        });
+    }
+    public void configurarbtnUsuarios(){
+        principal.setUsuariosAccion(data -> {
+            System.out.println("Cambiando a usuarios...");
+            try {
+                ConexionBD.getConector().cambiarBD(Userio.class.getSimpleName());
+                cambiarAABCC(Userio.class.getSimpleName());
+
+                control.setBackAccion(e -> {
+                    try {
+                        ConexionBD.getConector().cambiarBD("Autos");
+                    } catch (SQLException ex) {
+                        System.out.println("Error al salir de Usuarios:");
+                        ex.printStackTrace();
+                        ErrorHandler.ejecutarHandler(ex.getErrorCode(), (Object) null);
+                    }
+
+                });
+            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            } catch (SQLException e) {
+                System.out.println("Error al cambiar a Usuarios:");
+                e.printStackTrace();
+                ErrorHandler.ejecutarHandler(e.getErrorCode(), (Object) null);
+
             }
         });
     }

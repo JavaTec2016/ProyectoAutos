@@ -48,8 +48,8 @@ public class ABCC extends JPanel{
 
     public ABCC(String tabla) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         this.tabla = tabla;
-        ArrayList<ModeloBD> ar = realizarConsulta(tabla, null, null, null);
-        ventana = FormHook.crearABCC(tabla, ar);
+        ArrayList<ModeloBD> modelos = realizarConsulta(tabla, null, null, null);
+        ventana = FormHook.crearABCC(tabla, modelos);
         formulario = (PanelHook) ventana.getChild("sidebar");
         errores = new ErrorMessageList(formulario.form);
         scroll = (ScrollHook)ventana.childPath("main/tableHolder/tabla");

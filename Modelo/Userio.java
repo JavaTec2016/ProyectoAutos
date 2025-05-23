@@ -1,5 +1,7 @@
 package Modelo;
 
+import java.util.LinkedHashMap;
+
 public class Userio extends ModeloBD {
     String nombre;
     String password;
@@ -17,6 +19,22 @@ public class Userio extends ModeloBD {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Boolean getLectura() {
+        return lectura;
+    }
+
+    public Boolean getEscritura() {
+        return escritura;
+    }
+
+    public Boolean getAdmin() {
+        return admin;
     }
 
     public static String[] obtenerCamposNombres(){
@@ -66,6 +84,17 @@ public class Userio extends ModeloBD {
     }
     public static String[] obtenerValidadores(){
         return  obtenerExpresiones();
+    }
+
+    @Override
+    public LinkedHashMap<String, Object> getInfoImportante() {
+        LinkedHashMap<String, Object> o = new LinkedHashMap<>();
+        o.put("nombre", nombre);
+        o.put("password", password);
+        o.put("lectura", lectura);
+        o.put("escritura", escritura);
+        o.put("admin", admin);
+        return o;
     }
 
     @Override

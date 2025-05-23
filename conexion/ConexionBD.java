@@ -183,7 +183,15 @@ public class ConexionBD {
         }
         return ocurrencia;
     }
-
+    public int cambiarBD(String BD) throws SQLException {
+        Userio user = usr;
+        if(!conexion.isClosed()) cerrarConexion();
+        if(user == null){
+            System.err.println("CONEXIONBD no existe un usuario para cambiar de BD");
+            return -1;
+        }
+        return abrirConexion2(user.getNombre(), user.getPassword(), BD);
+    }
     /**
      * Cierra la conexion actual si está abierta
      * @throws SQLException si falla la operación

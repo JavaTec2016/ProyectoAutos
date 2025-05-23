@@ -916,7 +916,7 @@ public class FormHook {
      * Crea un panel lateral con información de usuario y botones de accion
      * @return panel de usuario
      */
-    public static PanelHook makeUserPanel(String usr){
+    public static PanelHook makeUserPanel(Userio usr){
         PanelHook sidebar = FormHook.makeGridBagPanel().setBackground(new Color(102, 102, 102))
                 .setPreferredSize(new Dimension(200, 0));
         sidebar.componente.setMinimumSize(new Dimension(200, 10));
@@ -930,7 +930,9 @@ public class FormHook {
         panelLogout.componente.setOpaque(false);
 
         PanelHook i = new PanelHook();
-        CampoHook nom = new CampoHook(new JLabel(usr))
+        String nombre = "JEUSER";
+        if(usr != null) nombre = usr.getNombre();
+        CampoHook nom = new CampoHook(new JLabel(nombre))
                 .setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15))
                 .setForeground(Color.white);
 
@@ -955,6 +957,10 @@ public class FormHook {
         PanelHook btnLogout = FormHook.makeSidebarBoton("Cerrar sesión", sidebar.componente.getBackground(), Color.CYAN, Color.white);
         btnLogout.setPreferredSize(new Dimension(0, 50));
         panelLogout.appendChild("btn", btnLogout, gp);
+
+        PanelHook btnUsuarios = FormHook.makeSidebarBoton("Administrar Usuarios", sidebar.componente.getBackground(), Color.CYAN, Color.WHITE);
+        btnUsuarios.setPreferredSize(new Dimension(0, 50));
+        panelBtns.appendChild("btnUsuarios", btnUsuarios, gp);
 
         return sidebar;
     }
@@ -1110,13 +1116,13 @@ public class FormHook {
     /**
      * Crea una pantalla ABCC a partir de la tabla proporcionada, incluyendo tabla para visualizar registros
      * @param modelo modelo para crear la pantalla
-     * @param mds registros a plasmar en la tabla
+     * @param modelos registros a plasmar en la tabla
      * @return pantalla personalizada
      * @throws InvocationTargetException si ocurrió un error al obtener los datos del modelo durante la creación del formulario
      * @throws NoSuchMethodException Si durante la creación del formulario no se encuentra un método para obtener datos del modelo
      * @throws IllegalAccessException Si los datos del modelo son inaccesibles al crear el formulario
      */
-    public static PanelHook crearABCC(String modelo, ArrayList<ModeloBD> mds) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    public static PanelHook crearABCC(String modelo, ArrayList<ModeloBD> modelos) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         PanelHook holder = FormHook.makeGridBagPanel().setBackground(Color.white);
         PanelHook topbar = FormHook.makeGridBagPanel().setBackground(new Color(0, 102, 204));
@@ -1157,7 +1163,7 @@ public class FormHook {
         tableHolder.appendChild("tabla", tabla, gc);
 
         //rellenado de tabla
-        FormHook.rellenarTabla(tabla, mds);
+        FormHook.rellenarTabla(tabla, modelos);
 
         return holder;
     }
@@ -1234,36 +1240,34 @@ public class FormHook {
     /**
      * Rellena la tabla dada con la lista de modelos especificada
      * @param tabla tabla a rellenar
-     * @param mds lista de modelos a mostrar
+     * @param modelos lista de modelos a mostrar
      */
-    public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> mds){
-        if(mds != null){
+    public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> modelos){
+        if(modelos != null){
             final int[] i = {0};
-            mds.forEach(new Consumer<ModeloBD>() {
-                @Override
-                public void accept(ModeloBD modeloBD) {
+            modelos.forEach(modeloBD -> {
 
-                    LinkedHashMap<String, Object> datos = modeloBD.getInfoImportante();
-                    JComponent[] display = new JComponent[datos.size()];
-                    String[] ids = new String[datos.size()];
-                    int[] tamaniosAuto = new int[datos.size()];
-                    int tamanioTotal = datos.size();
-                    for (int i = 0; i < display.length; i++) {
+                LinkedHashMap<String, Object> datos = modeloBD.getInfoImportante();
+                if(datos == null) System.err.println("FORMHOOK los datos importantes del modelo '"+modeloBD.getClass().getSimpleName()+"' son nulos");
+                JComponent[] display = new JComponent[datos.size()];
+                String[] ids = new String[datos.size()];
+                int[] tamaniosAuto = new int[datos.size()];
+                int tamanioTotal = datos.size();
+                for (int i1 = 0; i1 < display.length; i1++) {
 
-                        Object datoCampo = datos.values().stream().toList().get(i);
-                        String dato = "sin dato";
-                        if(datoCampo != null) dato = datoCampo.toString();
+                    Object datoCampo = datos.values().stream().toList().get(i1);
+                    String dato = "sin dato";
+                    if(datoCampo != null) dato = datoCampo.toString();
 
-                        display[i] = new JLabel(dato);
-                        if(datoCampo == null) display[i].setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 15));
-                        ids[i] = datos.keySet().stream().toList().get(i);
-                        tamaniosAuto[i] = 1;
-                    }
-
-                    PanelHook reg = FormHook.crearRegistroGridBag(display, ids, tamaniosAuto, tamanioTotal, 100, modeloBD);
-                    tabla.getView().appendChild(""+i[0], reg);
-                    i[0]++;
+                    display[i1] = new JLabel(dato);
+                    if(datoCampo == null) display[i1].setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 15));
+                    ids[i1] = datos.keySet().stream().toList().get(i1);
+                    tamaniosAuto[i1] = 1;
                 }
+
+                PanelHook reg = FormHook.crearRegistroGridBag(display, ids, tamaniosAuto, tamanioTotal, 100, modeloBD);
+                tabla.getView().appendChild(""+i[0], reg);
+                i[0]++;
             });
         }
         tabla.getComponente().revalidate();

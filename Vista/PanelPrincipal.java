@@ -21,8 +21,9 @@ public class PanelPrincipal extends PanelHook {
     PanelHook panelUser;
 
     PanelHook btnLogout;
+    PanelHook btnUsuarios;
     Call logoutAccion;
-    CampoHook backButton;
+    Call usuariosAccion;
 
     LinkedHashMap<String, MainButtonHook> botonesMain;
 
@@ -36,9 +37,7 @@ public class PanelPrincipal extends PanelHook {
         panelLabel = FormHook.makeGridBagPanel().setBackground(new Color(255, 255, 255));;
         panelTablas = FormHook.makeGridBagPanel();
 
-        String nom = "JEUSER";
-        if(usr != null) nom = usr.getNombre();
-        panelUser = FormHook.makeUserPanel(nom);
+        panelUser = FormHook.makeUserPanel(usr);
 
         CampoHook label = new CampoHook(new JLabel("Categorías disponibles en el sistema"))
                 .setFont(new Font("Segoe UI", Font.ITALIC, 18));
@@ -61,8 +60,13 @@ public class PanelPrincipal extends PanelHook {
         panelLabel.appendChild("label", label, constraints);
 
         btnLogout = (PanelHook) childPath("panelUser/logout/btn");
-
+        btnUsuarios = (PanelHook) childPath("panelUser/btns/btnUsuarios");
+        if(!usr.getAdmin()){
+            btnUsuarios.componente.setVisible(false);
+            btnUsuarios.componente.setEnabled(false);
+        }
         setLogoutListener();
+        setUsuariosListener();
         iniciarOpcionesMain();
     }
 
@@ -124,12 +128,44 @@ public class PanelPrincipal extends PanelHook {
             }
         });
     }
+    /**
+     * Establece el comportamiento de clic y cambio de colores del boton de cerrar sesión
+     * al clicar, se ejecuta {@link #logoutAccion}
+     */
+    private void setUsuariosListener() {
+        btnUsuarios.componente.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                usuariosAccion.run(e);
+            }
 
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                btnUsuarios.setBackground(Color.DARK_GRAY);
+                btnUsuarios.getChild("detail").setBackground(Color.white);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                btnUsuarios.setBackground(new Color(102, 102, 102));
+                btnUsuarios.getChild("detail").setBackground(Color.cyan);
+            }
+        });
+    }
     /**
      * Establece la función de clic para el botón de logout
      * @param c Función a la cual se llama cuando se le da clic al botón
      */
     public void setLogoutAccion(Call c){
         logoutAccion = c;
+    }
+    /**
+     * Establece la función de clic para el botón de logout
+     * @param c Función a la cual se llama cuando se le da clic al botón
+     */
+    public void setUsuariosAccion(Call c){
+        usuariosAccion = c;
     }
 }

@@ -3,6 +3,8 @@ package Vista;
 import ErrorHandlin.ErrorHandler;
 import Modelo.Userio;
 
+import javax.swing.*;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 
 public class ABCCUserio extends ABCC {
