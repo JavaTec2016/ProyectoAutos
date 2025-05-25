@@ -566,7 +566,7 @@ public class ABCC extends JPanel{
         ArrayList<ModeloBD> m = realizarConsulta(tabla, selecNombres, filtroNombres, filtroValores);
         if(m == null) return;
         FormHook.limpiarTabla(s);
-        FormHook.rellenarTabla(s, m);
+        FormHook.rellenarTabla(s, m, tabla);
         configurarBotonesRegistros(s);
     }
     /**
@@ -592,7 +592,7 @@ public class ABCC extends JPanel{
 
             if(m == null) return;
             FormHook.limpiarTabla(scroll);
-            FormHook.rellenarTabla(scroll, m);
+            FormHook.rellenarTabla(scroll, m, tabla);
             configurarBotonesRegistros(scroll);
         }).start();
     }
@@ -618,7 +618,7 @@ public class ABCC extends JPanel{
             ArrayList<ModeloBD> m = realizarConsultaLike(tabla, finalSn, finalFn, finalFv);
 
             FormHook.limpiarTabla(scroll);
-            FormHook.rellenarTabla(scroll, m);
+            FormHook.rellenarTabla(scroll, m, tabla);
             configurarBotonesRegistros(scroll);
         }).start();
     }

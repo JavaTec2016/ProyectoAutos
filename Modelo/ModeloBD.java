@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public abstract class ModeloBD implements Registrable {
     static HashMap<String, Class<? extends ModeloBD>> modelos = new HashMap<>();
@@ -161,6 +162,10 @@ public abstract class ModeloBD implements Registrable {
         Constructor<? extends ModeloBD> c = (Constructor<? extends ModeloBD>) modlemombo.getDeclaredConstructors()[0];
 
         try {
+            if(args == null){
+                Object[] argsNull = new Object[c.getParameterCount()];
+                return c.newInstance(argsNull);
+            }
             return c.newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -168,6 +173,30 @@ public abstract class ModeloBD implements Registrable {
     }
     public LinkedHashMap<String, Object> getInfoImportante(){return null;}
 
+    @Override
+    public LinkedHashMap<String, String> labelsToHashMap() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        String[] labels = obtenerLabelsDe(this.getClass().getSimpleName());
+        String[] nombres = obtenerCampoNombresDe(getClass());
+
+        LinkedHashMap<String, String> mapa = new LinkedHashMap<>();
+
+        for (int i = 0; i < labels.length; i++) {
+            mapa.put(nombres[i], labels[i]);
+        }
+        return mapa;
+    }
+
+    @Override
+    public LinkedHashMap<String, String> getLabelsImportantes() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        LinkedHashMap<String, Object> info = getInfoImportante();
+        LinkedHashMap<String, String> labels = labelsToHashMap();
+        LinkedHashMap<String, String> output = new LinkedHashMap<>();
+
+        info.forEach((key, value) -> {
+            output.put(key, labels.get(key));
+        });
+        return output;
+    }
     public static void registrarModelos(){
         registrarModelo(Cliente.class);
         registrarModelo(Vendedor.class);
@@ -182,6 +211,7 @@ public abstract class ModeloBD implements Registrable {
 
         registrarModelo(Datos_Venta_Conteo.class);
         registrarModelo(Opciones_Activas_Conteo.class);
+        registrarModelo(Cliente_Referencias_Conteo.class);
 
     }
     public static String formatearMensajeErrorForaneas(String modelo){

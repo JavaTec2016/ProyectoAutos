@@ -9,7 +9,7 @@ public class ABCCVendedor extends ABCC {
 
     public ABCCVendedor() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         super(Vendedor.class.getSimpleName());
-
+        titulo.setText("Vendedores");
         ErrorHandler.registrarHandler(ErrorHandler.SQL_DUPLICATE_ENTRY, data -> {
             Ventana.panelError("Ya existe un vendedor con la misma ID", "Vendedor duplicado");
         });

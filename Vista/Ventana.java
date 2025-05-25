@@ -32,7 +32,7 @@ public class Ventana extends JFrame {
     JMenuItem reporteFactura;
 
     public Ventana(){
-        agregarMenu();
+        crearMenu();
         menu.setVisible(false);
         menuReporte = menuOpcion("Reportes");
         menuVistas = menuOpcion("Vistas");
@@ -77,6 +77,7 @@ public class Ventana extends JFrame {
                 throw new RuntimeException(ex);
             }
         }));
+
         menuEstadisticas.add(opcionItem("Modificaciones más vendidas", e -> {
             try {
                 Graficador.makeModificacionesChart();
@@ -91,7 +92,18 @@ public class Ventana extends JFrame {
             }
         }));
         menuEstadisticas.add(opcionItem("Referencias más populares", e -> {
-            ///JFreeChart con graficos basados en Cliente
+
+            try {
+                Graficador.makeReferenciasDataset();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
         }));
 
         menuReporte.add(reporteFactura);
@@ -119,16 +131,18 @@ public class Ventana extends JFrame {
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * Agrega un nuevo menu de opciones
-     */
-    public void agregarMenu(){
+    public void crearMenu(){
         menu = new JMenuBar();
         menu.setBackground(new Color(0, 153, 255));
         menu.setBorder(null);
         menu.setForeground(Color.white);
         menu.setOpaque(true);
+    }
+    /**
+     * Agrega un nuevo menu de opciones
+     */
+    public void agregarMenu(){
+
         setJMenuBar(menu);
     }
     public JMenu menuOpcion(String texto){
@@ -168,6 +182,7 @@ public class Ventana extends JFrame {
                 panelError("Usuario o contraseña incorrectos", "Autenticación fallida");
                 return;
             };
+            if(ConexionBD.getConector().getUsrLectura()) agregarMenu();
             cambiarAPrincipal(ConexionBD.getConector().getUsr());
         });
     }
@@ -219,6 +234,12 @@ public class Ventana extends JFrame {
         add(control.ventana.componente, "ABCC");
         layout.show(getContentPane(), "ABCC");
         revalidate();
+
+        if(!ConexionBD.getConector().getUsrEscritura()){
+            control.setRegistrosEditables(false);
+            control.setRegistrosEliminables(false);
+            control.setVisibleAgregar(false);
+        }
     }
 
     /**
@@ -268,6 +289,10 @@ public class Ventana extends JFrame {
     public void configurarBotonesPrincipal(){
         principal.botonesMain.forEach((id, btn) -> btn.setMouseClick(e -> {
             try {
+                if(!ConexionBD.getConector().getUsrLectura()){
+                    panelError("No tiene permiso para consultar datos", "Permisos insuficientes");
+                    return;
+                }
                 cambiarAABCC(id);
                 System.out.println(id);
             } catch (InvocationTargetException ex) {

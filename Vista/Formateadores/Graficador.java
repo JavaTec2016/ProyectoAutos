@@ -31,9 +31,25 @@ public class Graficador extends JFrame {
         chart.setVisible(true);
     }
     public static void makeModificacionesChart() throws SQLException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Graficador chart = new Graficador("Modificaciones más populares", "Modificacion", "Elecciones", getModificacionesDataset());
+        Graficador chart = new Graficador("Modificaciones más populares", "Modificación", "Elecciones", getModificacionesDataset());
         chart.pack();
         chart.setVisible(true);
+    }
+    public static void makeReferenciasDataset() throws SQLException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Graficador chart = new Graficador("Referencias más comunes", "Referencia", "Ocurrencias", getReferenciasDataset());
+        chart.pack();
+        chart.setVisible(true);
+    }
+    public static DefaultCategoryDataset getReferenciasDataset() throws SQLException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        ArrayList<ModeloBD> modelos = DAO.d.obtenerRegistrosGroup(Cliente.class.getSimpleName(), Cliente_Referencias_Conteo.class, new String[]{"fuente_referencia", "COUNT(*) AS cantidad"}, null, null, "fuente_referencia");
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (ModeloBD modelo : modelos) {
+            Cliente_Referencias_Conteo referencia = (Cliente_Referencias_Conteo)modelo;
+            String[] labels = ModeloBD.obtenerLabelsDe(modelo.getClass().getSimpleName());
+
+            dataset.addValue(referencia.getCantidad(), labels[1], referencia.getFuente_referencia());
+        }
+        return dataset;
     }
     public static DefaultCategoryDataset getModificacionesDataset() throws SQLException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         ArrayList<ModeloBD> modelos = DAO.d.obtenerRegistrosGroup(Opciones_Activas.class.getSimpleName(), Opciones_Activas_Conteo.class, new String[]{"opcion", "COUNT(*) AS ventas"}, null, null, "opcion");

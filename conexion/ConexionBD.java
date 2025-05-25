@@ -32,7 +32,15 @@ public class ConexionBD {
     public Userio getUsr() {
         return usr;
     }
-
+    public boolean getUsrLectura(){
+        return usr.getLectura() || usr.getAdmin();
+    }
+    public boolean getUsrEscritura(){
+        return usr.getEscritura() || usr.getAdmin();
+    }
+    public boolean getUsrAdmin(){
+        return usr.getAdmin();
+    }
     public void abrirConexion(String usuario, String contra, String BD) throws SQLException {
         if(conexion != null && !conexion.isClosed()){
             System.out.println("ya hay una conexion");

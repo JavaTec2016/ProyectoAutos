@@ -5,16 +5,12 @@ import Modelo.ModeloBD;
 import Modelo.Registrable;
 import conexion.ConexionBD;
 
-import javax.xml.transform.Result;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.function.BiConsumer;
 
 public class DAO {
     ConexionBD conexion = ConexionBD.getConector();
@@ -75,7 +71,6 @@ public class DAO {
                 Object valor = filtroValores[i];
                 String v = "";
                 if(valor instanceof String || valor instanceof Date) v = "'"+valor.toString()+"'";
-                //fil += filtroNombres[i]+"="+v+", ";
                 fil+= filtroNombres[i]+"=? AND ";
             }
             fil = fil.substring(0, fil.length()-5);
@@ -85,6 +80,17 @@ public class DAO {
         conexion.prepararStatement(sql, val);
         return conexion.ejecutarSQL();
     }
+
+    /**
+     * Consulta una tabla en la BD, esperando una instrucción COUNT
+     * @param tabla tabla a consultar
+     * @param selecNombres Atributos a seleccionar, incluye la instrucción COUNT
+     * @param filtroNombres campos para filtrar la consulta
+     * @param filtroValores valores para filtrar la consulta
+     * @param grupoNombre nombre del atributo a agrupar
+     * @return {@link ResultSet} con los registros encontrados
+     * @throws SQLException si ocurre un error al realizar la consulta
+     */
     public ResultSet consultarGroup(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores, String grupoNombre) throws SQLException {
         Object[] val = new Object[0];
         String sql = "SELECT ";
@@ -159,6 +165,16 @@ public class DAO {
         conexion.prepararStatement(sql, likes);
         return conexion.ejecutarSQL();
     }
+
+    /**
+     * Realiza una consulta a la base de datos y retorna una lista de registros encontrados
+     * @param tabla nombre de la tabla a consultar
+     * @param selecNombres columnas a seleccionar de la consulta
+     * @param filtroNombres columnas a filtrar en la consulta
+     * @param filtroValores valores de las columnas a filtrar
+     * @return {@link ArrayList<ModeloBD>} con los registros
+     * @throws SQLException si falla la consulta
+     */
     public ArrayList<ModeloBD> obtenerRegistros(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
         ResultSet rs = consultar(tabla, selecNombres, filtroNombres, filtroValores);
         Object[] datos = new Object[rs.getMetaData().getColumnCount()];
@@ -172,6 +188,17 @@ public class DAO {
         }
         return modelos;
     }
+    /**
+     * Consulta una tabla en la BD, esperando una instrucción COUNT y retorna una lista de registros encontrados
+     * @param tabla tabla a consultar
+     * @param modelo clase del modelo a instanciar, en caso de que los atributos de los registros y el modelo de la tabla no coincidan
+     * @param selecNombres Atributos a seleccionar, incluye la instrucción COUNT
+     * @param filtroNombres campos para filtrar la consulta
+     * @param filtroValores valores para filtrar la consulta
+     * @param grupo nombre del atributo a agrupar
+     * @return {@link ArrayList<ModeloBD>} con los registros
+     * @throws SQLException si ocurre un error al realizar la consulta
+     */
     public ArrayList<ModeloBD> obtenerRegistrosGroup(String tabla, Class<? extends Registrable> modelo, String[] selecNombres, String[] filtroNombres, Object[] filtroValores, String grupo) throws SQLException {
         ResultSet rs = consultarGroup(tabla, selecNombres, filtroNombres, filtroValores, grupo);
         ArrayList<ModeloBD> modelos = new ArrayList<>();
@@ -180,7 +207,10 @@ public class DAO {
         Class[] paramTypes = ModeloBD.obtenerCampoTiposDe(modelo);
         Object[] args = new Object[argNames.length];
 
+        boolean skipRegistro = false;
+
         while (rs.next()){
+            skipRegistro = false;
             for (int i = 0; i < args.length; i++) {
                 String columna = rs.getMetaData().getColumnName(i+1);
 
@@ -189,15 +219,32 @@ public class DAO {
                     System.out.println("DAO campos irregulares: esperaba '"+argNames[i]+"', recibio '"+columna+"'");
                     args[i] = null;
                 }else {
-                    args[i] = Extractor.convertir(rs.getObject(i+1).toString(), paramTypes[i]);
+                    String dato = null;
+                    if(rs.getObject(i+1) != null) dato = rs.getObject(i+1).toString();
+                    if(dato == null){
+                        skipRegistro = true;
+                        break;
+                    }
+                    args[i] = Extractor.convertir(dato, paramTypes[i]);
 
                 }
             }
+            if(skipRegistro) continue;
             System.out.println("DAO Instanciando GROUP:" + Arrays.toString(args));
             modelos.add(ModeloBD.instanciar(modelo.getSimpleName(), args));
         }
         return modelos;
     }
+
+    /**
+     * Realiza una consulta a la Base de datos, retorna una lsita de coincidencias aproximadas a los filtros.
+     * @param tabla nombre de la tabla a consultar
+     * @param selecNombres columnas a seleccionar de la consulta
+     * @param filtroNombres columnas a filtrar en la consulta
+     * @param filtroValores valores de las columnas a filtrar
+     * @return {@link ArrayList<ModeloBD>} con los registros
+     * @throws SQLException si falla la consulta
+     */
     public ArrayList<ModeloBD> obtenerRegistrosLike(String tabla, String[] selecNombres, String[] filtroNombres, Object[] filtroValores) throws SQLException {
         ResultSet rs = consultarLike(tabla, selecNombres, filtroNombres, filtroValores);
         Object[] datos = new Object[rs.getMetaData().getColumnCount()];
@@ -211,6 +258,13 @@ public class DAO {
         }
         return modelos;
     }
+
+    /**
+     * Modifica un registro existente con los datos de un modelo
+     * @param reg Modelo con los nuevos datos
+     * @param primariasOriginales Llaves primarias del registro a modificar
+     * @throws SQLException si la instrucción falla
+     */
     public void modificar(ModeloBD reg, Object[] primariasOriginales) throws SQLException {
         try {
             String nom = reg.getClass().getSimpleName();
@@ -251,6 +305,12 @@ public class DAO {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Elimina un modelo de la base de datos
+     * @param reg modelo del registro a eliminar
+     * @throws SQLException si la instrucción falla
+     */
     public void eliminar(ModeloBD reg) throws SQLException {
         String nom = reg.getClass().getSimpleName();
         try {
@@ -279,8 +339,5 @@ public class DAO {
             throw new RuntimeException(e);
         }
 
-    }
-    public ResultSet getRs(){
-        return rs;
     }
 }

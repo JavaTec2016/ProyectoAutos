@@ -750,11 +750,13 @@ public class FormHook {
         registro.setMaximumSize(new Dimension(32767, tamanio));
         int celdasTotal = celdas+2;
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.fill = GridBagConstraints.BOTH;
+        GridBagConstraints constraints = makeConstraint(-1, 0, 1, 1, GridBagConstraints.BOTH);
         double freeWeight = 1;
+        System.out.println("-----------------------------");
         for (int i = 0; i < datos.length; i++) {
-            int ocupa = distribucion[i];
+            int ocupa = 1;
+            if(distribucion != null) ocupa = distribucion[i];
+
             double weight = obtenerDatoWeight(ocupa, celdasTotal);
             freeWeight -= weight;
             constraints.weightx = weight;
@@ -764,7 +766,7 @@ public class FormHook {
         agregarRegistroAdapter(registro);
         registro.componente.setBackground(registro.colorSinEnfoque);
         constraints.weightx = freeWeight/2;
-        constraints.fill = GridBagConstraints.NONE;
+        //constraints.fill = GridBagConstraints.NONE;
 
         JButton btnEditar = new JButton("Editar");
         JButton btnEliminar = new JButton("Eliminar");
@@ -1163,7 +1165,7 @@ public class FormHook {
         tableHolder.appendChild("tabla", tabla, gc);
 
         //rellenado de tabla
-        FormHook.rellenarTabla(tabla, modelos);
+        FormHook.rellenarTabla(tabla, modelos, modelo);
 
         return holder;
     }
@@ -1236,15 +1238,54 @@ public class FormHook {
         tabla.getView().componente.repaint();
 
     }
+    public static JComponent[] makeLabels(String[] datos, Font font, Color textColor){
+        JLabel[] output = new JLabel[datos.length];
+        int i = 0;
+        for (String dato : datos) {
+            output[i] = new JLabel(dato);
+            output[i].setFont(font);
+            output[i].setForeground(textColor);
+            i++;
+        }
+        return output;
+    }
+    public static void headerTabla(ScrollHook tabla, ModeloBD modelo){
+        LinkedHashMap<String, Object> datos = modelo.getInfoImportante();
+        if(datos == null) return;
+        String[] ids = datos.keySet().toArray(new String[0]);
+        String[] display = new String[ids.length];
+        try {
+            display = modelo.getLabelsImportantes().values().toArray(new String[0]);
+            Registro registro = FormHook.crearRegistroGridBag(makeLabels(display,new Font(Font.SANS_SERIF, Font.ITALIC, 14), Color.black), ids, null, datos.size(), 50, modelo);
 
+            registro.setClicAccion(data -> {return;});
+            registro.setMouseEnter(data -> {registro.setColorsNormal();});
+            registro.setMouseExit(data -> {registro.setColorsNormal();;});
+            registro.colorOriginal = new Color(245, 245, 245);
+            registro.colorEnfocado = new Color(245, 245, 245);
+            registro.setBackground(registro.colorOriginal);
+            registro.btnEliminar.setVisible(false);
+            registro.btnEditar.setVisible(false);
+            tabla.getView().appendChild("header", registro);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     /**
      * Rellena la tabla dada con la lista de modelos especificada
      * @param tabla tabla a rellenar
      * @param modelos lista de modelos a mostrar
      */
-    public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> modelos){
+    public static void rellenarTabla(ScrollHook tabla, ArrayList<ModeloBD> modelos, String headerModelo){
         if(modelos != null){
             final int[] i = {0};
+            //crear el header
+            headerTabla(tabla, ModeloBD.instanciar(headerModelo, null));
             modelos.forEach(modeloBD -> {
 
                 LinkedHashMap<String, Object> datos = modeloBD.getInfoImportante();

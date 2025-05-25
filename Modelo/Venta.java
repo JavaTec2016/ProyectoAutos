@@ -40,7 +40,7 @@ public class Venta extends ModeloBD {
         return obtenerCampoNombresDe(Venta.class);
     }
     public static String[] obtenerLabels(){
-        return new String[]{"ID", "Fecha de venta", "Cliente", "Vendedor", "Comisión del vendedor", "Auto", "Precio final del auto", "Tipo de financiamiento", "Kilometraje", "Fecha de entrega", "Tipo de garantía"};
+        return new String[]{"ID", "Fecha de venta", "Cliente", "Vendedor", "Comisión del vendedor", "Auto", "Precio final", "Financiamiento", "Kilometraje", "Fecha de entrega", "Tipo de garantía"};
     }
     public static Class<?>[] obtenerCampoTipos(){
         return obtenerCampoTiposDe(Venta.class);

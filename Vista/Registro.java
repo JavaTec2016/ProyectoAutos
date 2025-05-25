@@ -1,12 +1,16 @@
 package Vista;
 
 import ErrorHandlin.Call;
+import FormTools.CampoHook;
+import FormTools.FormHook;
 import FormTools.PanelHook;
 import Modelo.ModeloBD;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Registro extends PanelHook {
     public ModeloBD asociado;
@@ -43,8 +47,8 @@ public class Registro extends PanelHook {
     public Registro(PanelHook reg, ModeloBD modelo){
         componente = reg.componente;
         asociado = modelo;
-        btnEditar = (JButton)reg.getChild("btnEditar").componente;
-        btnEliminar = (JButton)reg.getChild("btnEliminar").componente;
+        btnEditar = (JButton)reg.getChild("btnEditar").getChild("dato").componente;
+        btnEliminar = (JButton)reg.getChild("btnEliminar").getChild("dato").componente;
 
         initColores();
         setDefaultMouseEnter();
@@ -70,13 +74,10 @@ public class Registro extends PanelHook {
      * Establece la accion predeterminada del registro cuando el cursor sale de su área
      */
     public void setDefaultMouseExit(){
-        mouseExit = new Call() {
-            @Override
-            public void run(Object... data) {
-                if(colorSinEnfoque.equals(colorOriginal)){
-                    setBackground(colorSinEnfoque);
-                }else setBackground(colorSeleccion);
-            }
+        mouseExit = data -> {
+            if(colorSinEnfoque.equals(colorOriginal)){
+                setBackground(colorSinEnfoque);
+            }else setBackground(colorSeleccion);
         };
     }
 
@@ -154,4 +155,25 @@ public class Registro extends PanelHook {
         mouseExit = c;
     }
 
+    /**
+     * Envuelve el dato en un panel con los constraints especificados y lo agrega al registro.
+     * @param Id nombre del panel que envuelve al elemento
+     * @param element Elemento a agregar, llamado "dato" dentro del panel que lo envuelve
+     * @param c {@link GridBagConstraints} para agregar al panel
+     */
+    @Override
+    public void addElementConstraint(String Id, CampoHook element, Object c) {
+        PanelHook area = FormHook.makeGridBagPanel();
+        GridBagConstraints gc = FormHook.makeConstraint(0, 0, 0, 0, GridBagConstraints.NONE);
+
+        //insets negativos para combatir los insets por defecto de los labels
+        gc.insets = new Insets(0, -100, 0, -100);
+        area.appendChild("dato", element, gc);
+        area.setOpaque(false);
+        super.addElementConstraint(Id, area, c);
+    }
+
+    public void addElementConstraint(String Id, JComponent element, Object c) {
+        addElementConstraint(Id, new CampoHook(element), c);
+    }
 }

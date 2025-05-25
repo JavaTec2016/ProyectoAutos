@@ -33,7 +33,7 @@ public class Cliente extends ModeloBD {
         return obtenerCampoNombresDe(Cliente.class);
     }
     public static String[] obtenerLabels(){
-        return new String[]{"ID", "Nombre", "Apellido", "Teléfono", "Ciudad", "Calle", "Número de domicilio", "Email", "Fuente de referencia", "Es cliente potencial?"};
+        return new String[]{"ID", "Nombre", "Apellido", "Teléfono", "Ciudad", "Calle", "Número de domicilio", "Email", "Referencia", "Cliente potencial?"};
     }
     public static Class<?>[] obtenerCampoTipos(){
         return obtenerCampoTiposDe(Cliente.class);
